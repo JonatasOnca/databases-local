@@ -84,12 +84,16 @@ fi
 
 # Verificar conectividade SQL Server
 if [ $sqlserver_running -eq 0 ]; then
-    # Usar uma abordagem mais direta para o SQL Server
-    if docker exec sqlserver_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "${SA_PASSWORD}" -C -Q "SELECT 1" -h -1 >/dev/null 2>&1; then
+    # Usar uma abordagem mais simples para o SQL Server
+    if docker exec sqlserver_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "${SA_PASSWORD}" -C -Q "SELECT 1 as test" -h -1 2>/dev/null | grep -q "1"; then
         print_status 0 "SQL Server está respondendo"
+        sqlserver_connected=0
     else
         print_status 1 "SQL Server não está respondendo"
+        sqlserver_connected=1
     fi
+else
+    sqlserver_connected=1
 fi
 
 echo ""
@@ -118,6 +122,13 @@ if [ $postgres_running -eq 0 ]; then
     fi
 fi
 
+if [ $sqlserver_running -eq 0 ] && [ $sqlserver_connected -eq 0 ]; then
+    # Para SQL Server, apenas confirmar que está conectado
+    # Evitar queries complexas que podem travar
+    print_status 0 "SQL Server: Conectado e funcionando"
+    echo -e "    ${YELLOW}💡 Para testar SQL Server: make demo-auto-data-sqlserver${NC}"
+fi
+
 echo ""
 echo "📊 Resumo do Health Check:"
 docker-compose ps
@@ -128,6 +139,11 @@ echo "• Para reconectar a um banco: make <banco>-cli"
 echo "• Para carregar dados de exemplo: make load-sample-data"  
 echo "• Para ver logs: make logs"
 echo "• Para resetar tudo: make clean && make up"
+echo ""
+echo -e "${YELLOW}🤖 Sistema de Gerenciamento Automático:${NC}"
+echo "• Demonstração completa: make demo-all-databases"
+echo "• Demonstração SQL Server: make demo-auto-data-sqlserver"  
+echo "• Gerenciamento contínuo: make start-auto-data"
 
 echo ""
 echo "✅ Validação concluída!"
