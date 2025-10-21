@@ -1,5 +1,9 @@
 -- Dados de exemplo específicos para MySQL
 
+-- Configurar charset para UTF-8
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- Desabilitar verificação de foreign keys temporariamente
 SET FOREIGN_KEY_CHECKS = 0;
 

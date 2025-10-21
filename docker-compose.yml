@@ -4,6 +4,7 @@ services:
     container_name: mysql_db
     profiles: ["all", "mysql"]
     # Multi-arch support: amd64, arm64/v8
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       # As variáveis são carregadas do arquivo .env
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -15,6 +16,7 @@ services:
     volumes:
       # Mapeia o script de inicialização para o diretório de entrada do MySQL
       - ./init/mysql/init_script.sql:/docker-entrypoint-initdb.d/init_script.sql
+      - ./init/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
       - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]

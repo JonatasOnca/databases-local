@@ -1,6 +1,10 @@
 -- O comando CREATE DATABASE não é necessário aqui,
 -- pois as imagens Docker criam o DB automaticamente com as variáveis de ambiente.
 
+-- Configurar charset para UTF-8
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- Tabela 1: Clientes
 CREATE TABLE IF NOT EXISTS clientes (
     id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'Identificador único do cliente',
@@ -8,7 +12,7 @@ CREATE TABLE IF NOT EXISTS clientes (
     email VARCHAR(100) UNIQUE COMMENT 'Endereço de email único do cliente',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data e hora de criação do registro',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data e hora da última atualização'
-) COMMENT='Tabela que armazena informações dos clientes';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela que armazena informações dos clientes';
 
 -- Tabela 2: Produtos
 CREATE TABLE IF NOT EXISTS produtos (
@@ -17,7 +21,7 @@ CREATE TABLE IF NOT EXISTS produtos (
     preco DECIMAL(10, 2) NOT NULL COMMENT 'Preço do produto em decimal (10,2)',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data e hora de criação do registro',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data e hora da última atualização'
-) COMMENT='Tabela que armazena informações dos produtos';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela que armazena informações dos produtos';
 
 -- Tabela 3: Pedidos
 CREATE TABLE IF NOT EXISTS pedidos (
@@ -27,7 +31,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data e hora de criação do registro',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data e hora da última atualização',
     FOREIGN KEY (cliente_id) REFERENCES clientes(id)
-) COMMENT='Tabela que armazena informações dos pedidos';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela que armazena informações dos pedidos';
 
 -- Tabela 4: Itens_Pedido
 CREATE TABLE IF NOT EXISTS itens_pedido (
@@ -39,7 +43,7 @@ CREATE TABLE IF NOT EXISTS itens_pedido (
     PRIMARY KEY (pedido_id, produto_id),
     FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
     FOREIGN KEY (produto_id) REFERENCES produtos(id)
-) COMMENT='Tabela que armazena os itens de cada pedido';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela que armazena os itens de cada pedido';
 
 -- Tabela 5: Logs
 CREATE TABLE IF NOT EXISTS logs (
@@ -48,4 +52,4 @@ CREATE TABLE IF NOT EXISTS logs (
     mensagem VARCHAR(255) COMMENT 'Mensagem do log',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data e hora de criação do registro',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data e hora da última atualização'
-) COMMENT='Tabela que armazena logs do sistema';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela que armazena logs do sistema';
