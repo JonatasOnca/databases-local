@@ -2,6 +2,26 @@
 
 Todas as mudanças notáveis do projeto serão documentadas neste arquivo.
 
+## [2.1.0] - 2024-10-21
+
+### 🌍 Suporte Multi-Arquitetura
+- **Compatibilidade universal**: Windows, Linux, Mac Intel e Mac M1/M2
+- **Detecção automática**: Script para identificar arquitetura e sugerir configuração
+- **Otimizações específicas**: Recomendações baseadas na plataforma
+- **Comando up-native**: Apenas bancos nativos para Mac M1/M2
+- **Documentação detalhada**: Tabela de compatibilidade por sistema
+
+### 🔧 Melhorias
+- **Script detect-architecture.sh**: Análise automática do sistema
+- **Comando make detect**: Detecção de arquitetura via Makefile
+- **Configurações de plataforma**: Comentários explicativos no docker-compose
+- **Documentação expandida**: Seção de otimizações por arquitetura
+
+### 📊 Validações
+- **Verificação de recursos**: Análise de memória disponível
+- **Docker health check**: Validação de Docker e Docker Compose
+- **Recomendações inteligentes**: Sugestões baseadas em recursos
+
 ## [2.0.0] - 2024-10-21
 
 ### 🚀 Adicionado

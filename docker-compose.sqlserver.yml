@@ -1,0 +1,34 @@
+# Configuração específica para SQL Server Multi-Arquitetura
+
+services:
+  sqlserver_db:
+    # SQL Server - Suporte apenas para amd64 (Intel/AMD)
+    # No Mac M1/M2: executa via emulação Rosetta
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64  # Força arquitetura x86_64
+    container_name: sqlserver_db
+    profiles: ["all", "sqlserver"]
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: ${ACCEPT_EULA}
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./init/sqlserver/init_script.sql:/usr/config/init_script.sql
+      - ./init/sqlserver/setup.sh:/usr/config/setup.sh
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P '${SA_PASSWORD}' -C -Q 'SELECT 1'"]
+      timeout: 30s
+      retries: 5
+      interval: 10s
+    restart: unless-stopped
+    command: >
+      bash -c "
+      /opt/mssql/bin/sqlservr &
+      sleep 45 &&
+      chmod +x /usr/config/setup.sh &&
+      /usr/config/setup.sh &&
+      wait
+      "

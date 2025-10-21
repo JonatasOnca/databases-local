@@ -27,7 +27,25 @@ up-postgres:
 # Inicia apenas o SQL Server
 up-sqlserver:
 	@echo "Iniciando apenas o SQL Server..."
+	@echo "⚠️  ATENÇÃO: Mac M1/M2 executará via emulação (mais lento)"
 	docker-compose -f $(COMPOSE_FILE) --profile sqlserver up -d
+
+# Inicia apenas bancos nativos (MySQL + PostgreSQL) - Recomendado para Mac M1/M2
+up-native:
+	@echo "Iniciando bancos nativos (MySQL + PostgreSQL)..."
+	docker-compose -f $(COMPOSE_FILE) --profile mysql --profile postgres up -d
+
+# Verifica a arquitetura do sistema
+check-arch:
+	@echo "Verificando arquitetura do sistema..."
+	@echo "Arquitetura: $$(uname -m)"
+	@echo "Sistema: $$(uname -s)"
+	@if [ "$$(uname -m)" = "arm64" ]; then \
+		echo "🍎 Mac M1/M2 detectado - SQL Server executará via emulação"; \
+		echo "💡 Recomendação: Use 'make up-native' para melhor performance"; \
+	else \
+		echo "💻 Arquitetura x86_64 - Todas as imagens nativas"; \
+	fi
 
 # Para todos os serviços
 down:
@@ -101,6 +119,11 @@ validate:
 	@echo "Executando validação completa do ambiente..."
 	@source .env && ./scripts/validate.sh
 
+# Detecta arquitetura e sugere melhor configuração
+detect:
+	@echo "Detectando arquitetura e configurações recomendadas..."
+	@./scripts/detect-architecture.sh
+
 # ==============================================================================
 # Targets Auxiliares
 # ==============================================================================
@@ -110,4 +133,4 @@ all: up
 
 # Remove os arquivos de volumes criados para permitir uma nova inicialização do DB (reset)
 # **Não remove os dados persistentes, apenas a configuração de inicialização**
-.PHONY: up up-mysql up-postgres up-sqlserver down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data backup test-audit validate all
+.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data backup test-audit validate detect check-arch all

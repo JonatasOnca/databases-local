@@ -3,6 +3,7 @@ services:
     image: mysql:8.0
     container_name: mysql_db
     profiles: ["all", "mysql"]
+    # Multi-arch support: amd64, arm64/v8
     environment:
       # As variáveis são carregadas do arquivo .env
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -25,6 +26,7 @@ services:
     image: postgres:15
     container_name: postgres_db
     profiles: ["all", "postgres"]
+    # Multi-arch support: amd64, arm64/v8, arm/v7, arm/v5
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -41,10 +43,12 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # SQL Server - Configuração Multi-Arquitetura
+  # IMPORTANTE: Mac M1/M2 executa via emulação (mais lento)
+  # Para melhor performance em ARM64, considere usar apenas MySQL/PostgreSQL
   sqlserver_db:
-    # SQL Server no Linux
     image: mcr.microsoft.com/mssql/server:2022-latest
-    platform: linux/amd64
+    platform: linux/amd64  # Força x86_64 para compatibilidade universal
     container_name: sqlserver_db
     profiles: ["all", "sqlserver"]
     environment:

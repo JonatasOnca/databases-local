@@ -8,6 +8,17 @@ Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de
 - Docker Compose
 - Make (opcional, mas recomendado)
 
+### 🏗️ Compatibilidade Multi-Arquitetura
+
+| Sistema | MySQL | PostgreSQL | SQL Server |
+|---------|-------|------------|------------|
+| Windows (x64) | ✅ Nativo | ✅ Nativo | ✅ Nativo |
+| Linux (x64) | ✅ Nativo | ✅ Nativo | ✅ Nativo |
+| Mac Intel | ✅ Nativo | ✅ Nativo | ✅ Nativo |
+| Mac M1/M2 | ✅ Nativo | ✅ Nativo | ⚠️ Emulação |
+
+**Nota**: SQL Server no Mac M1/M2 executa via emulação x86_64 (performance reduzida)
+
 ## 🚀 Início Rápido
 
 1. **Clone o repositório e configure o ambiente:**
@@ -35,7 +46,12 @@ Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de
    make sqlserver-cli
    ```
 
-4. **Valide o ambiente:**
+4. **Detecte sua arquitetura e obtenha recomendações:**
+   ```bash
+   make detect
+   ```
+
+5. **Valide o ambiente:**
    ```bash
    make validate
    ```
@@ -51,12 +67,24 @@ make up-mysql
 # Apenas PostgreSQL  
 make up-postgres
 
-# Apenas SQL Server
+# Apenas SQL Server (⚠️ emulação no Mac M1/M2)
 make up-sqlserver
+
+# Bancos nativos - Recomendado para Mac M1/M2
+make up-native
 
 # Todos os bancos (padrão)
 make up
 ```
+
+### 🚀 Otimizações por Arquitetura
+
+**Mac M1/M2 (ARM64):**
+- ✅ `make up-native` - Apenas bancos nativos (melhor performance)
+- ⚠️ `make up` - Inclui SQL Server via emulação (mais lento)
+
+**Windows/Linux/Mac Intel:**
+- ✅ `make up` - Todos os bancos nativos (performance total)
 
 ## 🛠️ Comandos Disponíveis
 
@@ -66,11 +94,13 @@ make up
 | `make up-mysql` | Inicia apenas o MySQL |
 | `make up-postgres` | Inicia apenas o PostgreSQL |
 | `make up-sqlserver` | Inicia apenas o SQL Server |
+| `make up-native` | Inicia bancos nativos (MySQL + PostgreSQL) |
 | `make down` | Para todos os containers |
 | `make restart` | Reinicia todos os containers |
 | `make clean` | Remove containers e volumes (⚠️ apaga dados) |
 | `make logs` | Exibe logs dos containers |
 | `make status` | Mostra status dos containers |
+| `make detect` | Detecta arquitetura e mostra recomendações |
 | `make validate` | Valida se o ambiente está funcionando |
 | `make mysql-cli` | Conecta ao MySQL |
 | `make postgres-cli` | Conecta ao PostgreSQL |
