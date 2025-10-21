@@ -25,6 +25,42 @@ CREATE TABLE clientes (
     updated_at DATETIME2 DEFAULT GETDATE()
 );
 
+-- Adicionar descrições para a tabela clientes
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Tabela que armazena informações dos clientes',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = clientes;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Identificador único do cliente',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = clientes,
+    @level2type = N'Column', @level2name = id;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Nome completo do cliente',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = clientes,
+    @level2type = N'Column', @level2name = nome;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Endereço de email único do cliente',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = clientes,
+    @level2type = N'Column', @level2name = email;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora de criação do registro',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = clientes,
+    @level2type = N'Column', @level2name = created_at;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora da última atualização',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = clientes,
+    @level2type = N'Column', @level2name = updated_at;
+
 -- Tabela 2: Produtos
 CREATE TABLE produtos (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -33,6 +69,42 @@ CREATE TABLE produtos (
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE()
 );
+
+-- Adicionar descrições para a tabela produtos
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Tabela que armazena informações dos produtos',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = produtos;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Identificador único do produto',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = produtos,
+    @level2type = N'Column', @level2name = id;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Nome do produto',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = produtos,
+    @level2type = N'Column', @level2name = nome;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Preço do produto em decimal (10,2)',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = produtos,
+    @level2type = N'Column', @level2name = preco;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora de criação do registro',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = produtos,
+    @level2type = N'Column', @level2name = created_at;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora da última atualização',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = produtos,
+    @level2type = N'Column', @level2name = updated_at;
 
 -- Tabela 3: Pedidos
 CREATE TABLE pedidos (
@@ -43,6 +115,42 @@ CREATE TABLE pedidos (
     updated_at DATETIME2 DEFAULT GETDATE(),
     FOREIGN KEY (cliente_id) REFERENCES clientes(id)
 );
+
+-- Adicionar descrições para a tabela pedidos
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Tabela que armazena informações dos pedidos',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = pedidos;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Identificador único do pedido',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = pedidos,
+    @level2type = N'Column', @level2name = id;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Referência ao cliente que fez o pedido',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = pedidos,
+    @level2type = N'Column', @level2name = cliente_id;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data do pedido',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = pedidos,
+    @level2type = N'Column', @level2name = data_pedido;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora de criação do registro',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = pedidos,
+    @level2type = N'Column', @level2name = created_at;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora da última atualização',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = pedidos,
+    @level2type = N'Column', @level2name = updated_at;
 
 -- Tabela 4: Itens_Pedido
 CREATE TABLE itens_pedido (
@@ -56,6 +164,42 @@ CREATE TABLE itens_pedido (
     FOREIGN KEY (produto_id) REFERENCES produtos(id)
 );
 
+-- Adicionar descrições para a tabela itens_pedido
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Tabela que armazena os itens de cada pedido',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = itens_pedido;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Referência ao pedido',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = itens_pedido,
+    @level2type = N'Column', @level2name = pedido_id;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Referência ao produto',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = itens_pedido,
+    @level2type = N'Column', @level2name = produto_id;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Quantidade do produto no pedido',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = itens_pedido,
+    @level2type = N'Column', @level2name = quantidade;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora de criação do registro',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = itens_pedido,
+    @level2type = N'Column', @level2name = created_at;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora da última atualização',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = itens_pedido,
+    @level2type = N'Column', @level2name = updated_at;
+
 -- Tabela 5: Logs
 CREATE TABLE logs (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -64,6 +208,42 @@ CREATE TABLE logs (
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE()
 );
+
+-- Adicionar descrições para a tabela logs
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Tabela que armazena logs do sistema',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = logs;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Identificador único do log',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = logs,
+    @level2type = N'Column', @level2name = id;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora do evento de log',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = logs,
+    @level2type = N'Column', @level2name = timestamp;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Mensagem do log',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = logs,
+    @level2type = N'Column', @level2name = mensagem;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora de criação do registro',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = logs,
+    @level2type = N'Column', @level2name = created_at;
+
+EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Data e hora da última atualização',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = logs,
+    @level2type = N'Column', @level2name = updated_at;
 GO
 
 -- Triggers para atualizar automaticamente o campo updated_at
