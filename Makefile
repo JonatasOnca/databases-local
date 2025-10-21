@@ -5,6 +5,75 @@
 # O nome do arquivo docker-compose a ser usado
 COMPOSE_FILE = docker-compose.yml
 
+# Configuração do ambiente virtual Python
+VENV_DIR = .venv
+PYTHON_VENV = $(VENV_DIR)/bin/python
+PIP_VENV = $(VENV_DIR)/bin/pip
+VENV_ACTIVATE = source $(VENV_DIR)/bin/activate &&
+
+# ==============================================================================
+# Gerenciamento do Ambiente Virtual Python
+# ==============================================================================
+
+# Configura ambiente virtual Python
+setup-python-env:
+	@echo "🐍 Configurando ambiente virtual Python..."
+	@./scripts/setup-python-env.sh
+
+# Verifica se o ambiente virtual existe
+check-venv:
+	@if [ ! -d "$(VENV_DIR)" ]; then \
+		echo "❌ Ambiente virtual não encontrado."; \
+		echo "💡 Execute: make setup-python-env"; \
+		exit 1; \
+	fi
+
+# Instala dependências Python no ambiente virtual
+install-python-deps: check-venv
+	@echo "📦 Instalando dependências Python no ambiente virtual..."
+	@$(VENV_ACTIVATE) $(PIP_VENV) install --upgrade pip
+	@$(VENV_ACTIVATE) $(PIP_VENV) install -r requirements.txt
+	@echo "✅ Dependências instaladas com sucesso!"
+
+# Atualiza dependências Python
+update-python-deps: check-venv
+	@echo "🔄 Atualizando dependências Python..."
+	@$(VENV_ACTIVATE) $(PIP_VENV) install --upgrade pip
+	@$(VENV_ACTIVATE) $(PIP_VENV) install --upgrade -r requirements.txt
+	@echo "✅ Dependências atualizadas com sucesso!"
+
+# Lista dependências instaladas
+list-python-deps: check-venv
+	@echo "📋 Dependências Python instaladas:"
+	@$(VENV_ACTIVATE) $(PIP_VENV) list
+
+# Verifica saúde do ambiente Python
+check-python-env: check-venv
+	@echo "🔍 Verificando ambiente Python..."
+	@echo "📁 Ambiente virtual: $(VENV_DIR)"
+	@echo "🐍 Python: $(shell $(VENV_ACTIVATE) python --version)"
+	@echo "📦 Pip: $(shell $(VENV_ACTIVATE) pip --version)"
+	@echo "📋 Localização pip: $(shell $(VENV_ACTIVATE) which pip)"
+	@echo "📍 Localização python: $(shell $(VENV_ACTIVATE) which python)"
+	@echo ""
+	@echo "🧪 Testando importações críticas..."
+	@$(VENV_ACTIVATE) python -c "import pymysql; print('✅ pymysql OK')" || echo "❌ pymysql ERRO"
+	@$(VENV_ACTIVATE) python -c "import psycopg2; print('✅ psycopg2 OK')" || echo "❌ psycopg2 ERRO"
+	@$(VENV_ACTIVATE) python -c "import pymssql; print('✅ pymssql OK')" || echo "❌ pymssql ERRO"
+
+# Remove ambiente virtual
+clean-python-env:
+	@echo "🧹 Removendo ambiente virtual Python..."
+	@if [ -d "$(VENV_DIR)" ]; then \
+		rm -rf $(VENV_DIR); \
+		echo "✅ Ambiente virtual removido!"; \
+	else \
+		echo "❌ Ambiente virtual não encontrado."; \
+	fi
+
+# Recria ambiente virtual do zero
+recreate-python-env: clean-python-env setup-python-env
+
 # ==============================================================================
 # Comandos Principais
 # ==============================================================================
@@ -264,45 +333,39 @@ validate-migration:
 # Gerenciamento Automático de Dados
 # ==============================================================================
 
-# Instala dependências Python necessárias
-install-python-deps:
-	@echo "📦 Instalando dependências Python..."
-	@python3 -m pip install -r requirements.txt
-	@echo "✅ Dependências instaladas com sucesso!"
-
 # Inicia o gerenciador automático para MySQL
-auto-data-mysql:
+auto-data-mysql: check-venv
 	@echo "🚀 Iniciando gerenciamento automático de dados - MySQL"
 	@echo "⏰ Executa operações INSERT/UPDATE a cada 30 segundos"
 	@echo "🔄 Pressione Ctrl+C para parar"
-	@python3 scripts/auto-data-manager.py mysql
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-manager.py mysql
 
 # Inicia o gerenciador automático para PostgreSQL
-auto-data-postgres:
+auto-data-postgres: check-venv
 	@echo "🚀 Iniciando gerenciamento automático de dados - PostgreSQL"
 	@echo "⏰ Executa operações INSERT/UPDATE a cada 30 segundos"
 	@echo "🔄 Pressione Ctrl+C para parar"
-	@python3 scripts/auto-data-manager.py postgres
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-manager.py postgres
 
 # Inicia o gerenciador automático para SQL Server
-auto-data-sqlserver:
+auto-data-sqlserver: check-venv
 	@echo "🚀 Iniciando gerenciamento automático de dados - SQL Server"
 	@echo "⏰ Executa operações INSERT/UPDATE a cada 30 segundos"
 	@echo "🔄 Pressione Ctrl+C para parar"
-	@python3 scripts/auto-data-manager.py sqlserver
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-manager.py sqlserver
 
 # Inicia o gerenciador automático para todos os bancos (em paralelo)
-auto-data-all:
+auto-data-all: check-venv
 	@echo "🚀 Iniciando gerenciamento automático para TODOS os bancos"
 	@echo "⏰ Executa operações INSERT/UPDATE a cada 30 segundos em cada banco"
 	@echo "🔄 Pressione Ctrl+C para parar todos"
 	@echo ""
 	@echo "Iniciando MySQL em background..."
-	@nohup python3 scripts/auto-data-manager.py mysql > logs/auto-mysql.log 2>&1 &
+	@nohup bash -c '$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-manager.py mysql' > logs/auto-mysql.log 2>&1 &
 	@echo "Iniciando PostgreSQL em background..."
-	@nohup python3 scripts/auto-data-manager.py postgres > logs/auto-postgres.log 2>&1 &
+	@nohup bash -c '$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-manager.py postgres' > logs/auto-postgres.log 2>&1 &
 	@echo "Iniciando SQL Server em background..."
-	@nohup python3 scripts/auto-data-manager.py sqlserver > logs/auto-sqlserver.log 2>&1 &
+	@nohup bash -c '$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-manager.py sqlserver' > logs/auto-sqlserver.log 2>&1 &
 	@echo ""
 	@echo "✅ Todos os gerenciadores iniciados em background!"
 	@echo "📋 Logs disponíveis em: logs/auto-*.log"
@@ -352,46 +415,46 @@ clean-auto-logs:
 	@echo "✅ Logs limpos!"
 
 # Inicialização interativa dos gerenciadores automáticos
-start-auto-data:
+start-auto-data: check-venv
 	@echo "🚀 Inicialização Interativa do Gerenciamento Automático"
 	@./scripts/start-auto-data.sh
 
 # Demonstração rápida do sistema (MySQL)
-demo-auto-data:
+demo-auto-data: check-venv
 	@echo "🎬 Demonstração do Gerenciamento Automático - MySQL (30 segundos)"
 	@echo "📊 Executando operações INSERT/UPDATE automaticamente..."
-	@python3 scripts/auto-data-demo.py mysql 30
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-demo.py mysql 30
 
 # Demonstração com PostgreSQL
-demo-auto-data-postgres:
+demo-auto-data-postgres: check-venv
 	@echo "🎬 Demonstração do Gerenciamento Automático - PostgreSQL (30 segundos)"
 	@echo "📊 Executando operações INSERT/UPDATE automaticamente..."
-	@python3 scripts/auto-data-demo.py postgres 30
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-demo.py postgres 30
 
 # Demonstração rápida (15 segundos)
-demo-quick:
+demo-quick: check-venv
 	@echo "⚡ Demonstração Rápida - MySQL (15 segundos)"
-	@python3 scripts/auto-data-demo.py mysql 15
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-demo.py mysql 15
 
 # Demonstração com SQL Server
-demo-auto-data-sqlserver:
+demo-auto-data-sqlserver: check-venv
 	@echo "🎬 Demonstração do Gerenciamento Automático - SQL Server (20 segundos)"
 	@echo "📊 Executando operações INSERT/UPDATE automaticamente..."
-	@python3 scripts/auto-data-sqlserver-test.py sqlserver 20
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-sqlserver-test.py sqlserver 20
 
 # Demonstração completa de todos os bancos (sequencial)
-demo-all-databases:
+demo-all-databases: check-venv
 	@echo "🎬 Demonstração COMPLETA - Todos os Bancos de Dados"
 	@echo "===================================================="
 	@echo ""
 	@echo "1️⃣ Testando MySQL (15s)..."
-	@python3 scripts/auto-data-demo.py mysql 15
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-demo.py mysql 15
 	@echo ""
 	@echo "2️⃣ Testando PostgreSQL (15s)..."
-	@python3 scripts/auto-data-demo.py postgres 15
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-demo.py postgres 15
 	@echo ""
 	@echo "3️⃣ Testando SQL Server (20s)..."
-	@python3 scripts/auto-data-sqlserver-test.py sqlserver 20
+	@$(VENV_ACTIVATE) $(PYTHON_VENV) scripts/auto-data-sqlserver-test.py sqlserver 20
 	@echo ""
 	@echo "🎉 TESTE COMPLETO FINALIZADO - Todos os 3 bancos testados com sucesso!"
 
@@ -462,13 +525,15 @@ help:
 	@echo "  make validate-migration SOURCE=mysql TARGET=postgres - Valida migração"
 	@echo ""
 	@echo "🤖 Gerenciamento Automático de Dados:"
+	@echo "  make setup-python-env    - 🐍 Configura ambiente virtual Python"
+	@echo "  make install-python-deps - 📦 Instala dependências Python"
+	@echo "  make check-python-env    - 🔍 Verifica ambiente Python"
 	@echo "  make demo-quick          - ⚡ Demonstração rápida MySQL (15s)"
 	@echo "  make demo-auto-data      - 🎬 Demonstração MySQL (30s)"  
 	@echo "  make demo-auto-data-postgres - 🎬 Demonstração PostgreSQL (30s)"
 	@echo "  make demo-auto-data-sqlserver - 🎬 Demonstração SQL Server (20s)"
 	@echo "  make demo-all-databases  - 🎯 TESTE COMPLETO de todos os bancos"
 	@echo "  make start-auto-data     - 🚀 Inicialização interativa (RECOMENDADO)"
-	@echo "  make install-python-deps - Instala dependências Python"
 	@echo "  make auto-data-mysql     - Gerenciador automático MySQL"
 	@echo "  make auto-data-postgres  - Gerenciador automático PostgreSQL"
 	@echo "  make auto-data-sqlserver - Gerenciador automático SQL Server"
@@ -494,4 +559,4 @@ help:
 
 # Remove os arquivos de volumes criados para permitir uma nova inicialização do DB (reset)
 # **Não remove os dados persistentes, apenas a configuração de inicialização**
-.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data reload-sample-data backup test-audit validate detect info test-connections monitor benchmark check-arch help all health-check backup-auto setup-backup-cron verify-backups backup-report cleanup-backups smart-setup quick-start test-suite collect-metrics realtime-metrics prometheus-metrics migrate export-data validate-migration install-python-deps auto-data-mysql auto-data-postgres auto-data-sqlserver auto-data-all stop-auto-data status-auto-data logs-auto-data clean-auto-logs start-auto-data demo-auto-data demo-auto-data-postgres demo-auto-data-sqlserver demo-quick demo-all-databases
+.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data reload-sample-data backup test-audit validate detect info test-connections monitor benchmark check-arch help all health-check backup-auto setup-backup-cron verify-backups backup-report cleanup-backups smart-setup quick-start test-suite collect-metrics realtime-metrics prometheus-metrics migrate export-data validate-migration setup-python-env check-venv install-python-deps update-python-deps list-python-deps check-python-env clean-python-env recreate-python-env auto-data-mysql auto-data-postgres auto-data-sqlserver auto-data-all stop-auto-data status-auto-data logs-auto-data clean-auto-logs start-auto-data demo-auto-data demo-auto-data-postgres demo-auto-data-sqlserver demo-quick demo-all-databases

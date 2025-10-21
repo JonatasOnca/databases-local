@@ -13,6 +13,20 @@ make smart-setup
 make quick-start
 ```
 
+### 🐍 Configuração do Ambiente Python
+```bash
+# 1. Configure o ambiente virtual Python (recomendado)
+make setup-python-env
+
+# 2. Ative o ambiente virtual
+source activate-env.sh
+# ou
+source .venv/bin/activate
+
+# 3. Instale/atualize dependências
+make install-python-deps
+```
+
 ### Setup Manual
 ```bash
 # 1. Configure o ambiente
@@ -92,6 +106,18 @@ make up
 | `make migrate` | Sistema de migração entre bancos |
 | `make export-data DB=mysql` | Exporta dados de banco específico |
 | `make validate-migration SOURCE=mysql TARGET=postgres` | Valida migração entre bancos |
+
+### 🐍 Comandos do Ambiente Python
+
+| Comando | Descrição |
+|---------|-----------|
+| `make setup-python-env` | Configura ambiente virtual Python |
+| `make install-python-deps` | Instala dependências Python |
+| `make update-python-deps` | Atualiza dependências Python |
+| `make check-python-env` | Verifica saúde do ambiente Python |
+| `make list-python-deps` | Lista dependências instaladas |
+| `make clean-python-env` | Remove ambiente virtual |
+| `make recreate-python-env` | Recria ambiente virtual do zero |
 
 ## 🔌 Portas e Conexões
 

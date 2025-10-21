@@ -17,14 +17,37 @@ fi
 
 echo "✅ Python 3 encontrado: $(python3 --version)"
 
-# Verificar se pip está disponível
-if ! python3 -m pip --version &> /dev/null; then
-    echo "❌ pip não encontrado!"
-    echo "💡 Instale o pip primeiro"
-    exit 1
+# Verificar se ambiente virtual existe
+if [ ! -d ".venv" ]; then
+    echo "⚠️  Ambiente virtual não encontrado!"
+    echo "� Configurando ambiente virtual..."
+    make setup-python-env
+    if [ $? -ne 0 ]; then
+        echo "❌ Falha ao configurar ambiente virtual"
+        exit 1
+    fi
 fi
 
-echo "✅ pip encontrado: $(python3 -m pip --version)"
+echo "✅ Ambiente virtual encontrado"
+
+# Ativar ambiente virtual e verificar dependências
+source .venv/bin/activate
+
+echo "✅ Ambiente virtual ativado: $(python --version)"
+
+# Verificar se as dependências estão instaladas
+echo "🔍 Verificando dependências..."
+python -c "import pymysql, psycopg2, pymssql" 2>/dev/null
+if [ $? -ne 0 ]; then
+    echo "📦 Instalando dependências..."
+    make install-python-deps
+    if [ $? -ne 0 ]; then
+        echo "❌ Falha ao instalar dependências"
+        exit 1
+    fi
+fi
+
+echo "✅ Dependências verificadas"
 
 # Criar diretório de logs se não existir
 if [ ! -d "logs" ]; then
