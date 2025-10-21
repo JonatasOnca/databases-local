@@ -2,6 +2,7 @@
 docker-volumes/
 
 # Environment files (keep .env.example but ignore actual .env for security)
+.env
 .env.local
 .env.production
 

@@ -35,18 +35,49 @@ Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de
    make sqlserver-cli
    ```
 
+4. **Valide o ambiente:**
+   ```bash
+   make validate
+   ```
+
+## 📋 Profiles (Execução Seletiva)
+
+Você pode executar apenas os bancos que precisar:
+
+```bash
+# Apenas MySQL
+make up-mysql
+
+# Apenas PostgreSQL  
+make up-postgres
+
+# Apenas SQL Server
+make up-sqlserver
+
+# Todos os bancos (padrão)
+make up
+```
+
 ## 🛠️ Comandos Disponíveis
 
 | Comando | Descrição |
 |---------|-----------|
 | `make up` | Inicia todos os containers |
+| `make up-mysql` | Inicia apenas o MySQL |
+| `make up-postgres` | Inicia apenas o PostgreSQL |
+| `make up-sqlserver` | Inicia apenas o SQL Server |
 | `make down` | Para todos os containers |
 | `make restart` | Reinicia todos os containers |
 | `make clean` | Remove containers e volumes (⚠️ apaga dados) |
 | `make logs` | Exibe logs dos containers |
+| `make status` | Mostra status dos containers |
+| `make validate` | Valida se o ambiente está funcionando |
 | `make mysql-cli` | Conecta ao MySQL |
 | `make postgres-cli` | Conecta ao PostgreSQL |
 | `make sqlserver-cli` | Conecta ao SQL Server |
+| `make load-sample-data` | Carrega dados de exemplo |
+| `make backup` | Cria backup dos bancos |
+| `make test-audit` | Testa campos de auditoria |
 
 ## 🔌 Portas e Conexões
 

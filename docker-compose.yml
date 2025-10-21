@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   mysql_db:
     image: mysql:8.0
     container_name: mysql_db
+    profiles: ["all", "mysql"]
     environment:
       # As variáveis são carregadas do arquivo .env
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -25,6 +24,7 @@ services:
   postgres_db:
     image: postgres:15
     container_name: postgres_db
+    profiles: ["all", "postgres"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -44,7 +44,9 @@ services:
   sqlserver_db:
     # SQL Server no Linux
     image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
     container_name: sqlserver_db
+    profiles: ["all", "sqlserver"]
     environment:
       SA_PASSWORD: ${SA_PASSWORD}
       ACCEPT_EULA: ${ACCEPT_EULA}
@@ -56,13 +58,15 @@ services:
       - ./init/sqlserver/setup.sh:/usr/config/setup.sh
       - sqlserver_data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P '${SA_PASSWORD}' -Q 'SELECT 1'"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P '${SA_PASSWORD}' -C -Q 'SELECT 1'"]
+      timeout: 30s
+      retries: 5
+      interval: 10s
     restart: unless-stopped
     command: >
       bash -c "
       /opt/mssql/bin/sqlservr &
+      sleep 45 &&
       chmod +x /usr/config/setup.sh &&
       /usr/config/setup.sh &&
       wait
