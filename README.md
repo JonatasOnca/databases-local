@@ -102,12 +102,18 @@ make up
 | `make status` | Mostra status dos containers |
 | `make detect` | Detecta arquitetura e mostra recomendações |
 | `make validate` | Valida se o ambiente está funcionando |
+| `make monitor` | Monitoramento completo em tempo real |
+| `make info` | Informações detalhadas dos bancos |
+| `make test-connections` | Testa conectividade básica |
+| `make benchmark` | Benchmark básico de performance |
 | `make mysql-cli` | Conecta ao MySQL |
 | `make postgres-cli` | Conecta ao PostgreSQL |
 | `make sqlserver-cli` | Conecta ao SQL Server |
 | `make load-sample-data` | Carrega dados de exemplo |
+| `make reload-sample-data` | Recarrega dados (limpa e carrega) |
 | `make backup` | Cria backup dos bancos |
 | `make test-audit` | Testa campos de auditoria |
+| `make help` | Mostra todos os comandos disponíveis |
 
 ## 🔌 Portas e Conexões
 
@@ -117,7 +123,41 @@ make up
 | PostgreSQL | 5432 | devuser | devpassword | testdb |
 | SQL Server | 1433 | SA | SuperSecureP@ssword! | master |
 
-## 📊 Estrutura do Banco
+## 📊 Monitoramento e Performance
+
+### Monitoramento Completo
+```bash
+make monitor  # Monitoramento em tempo real
+```
+
+Exibe:
+- Status dos containers
+- Uso de recursos (CPU, memória)
+- Conectividade dos bancos
+- Logs recentes
+- Atualização automática a cada 5 segundos
+
+### Benchmark de Performance
+```bash
+make benchmark  # Teste básico de performance
+```
+
+Compara tempos de resposta entre os três bancos com:
+- SELECT simples (COUNT)
+- JOIN com GROUP BY
+
+### Validação do Ambiente
+```bash
+make validate  # Valida configuração completa
+```
+
+Verifica:
+- Containers rodando
+- Conectividade
+- Dados de exemplo
+- Configurações
+
+## 🗂️ Estrutura de Arquivos
 
 Todos os bancos são inicializados com o mesmo esquema, incluindo campos de auditoria:
 

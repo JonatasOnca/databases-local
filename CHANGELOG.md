@@ -2,6 +2,54 @@
 
 Todas as mudanças notáveis do projeto serão documentadas neste arquivo.
 
+## [3.0.0] - 2024-12-28
+
+### 🚀 Novos Recursos Major
+- **Sistema de Monitoramento Completo**: `make monitor`
+  - Monitoramento em tempo real com atualização a cada 5s
+  - Status de containers, uso de recursos, conectividade
+  - Logs recentes integrados em tempo real
+  - Interface colorizada e organizada
+- **Benchmark de Performance**: `make benchmark`
+  - Comparação automática entre MySQL, PostgreSQL e SQL Server
+  - Testes com SELECT simples e JOIN complexo
+  - Medição precisa de tempos de resposta
+  - Resultados coloridos e organizados
+- **Sistema de Ajuda Avançado**: `make help`
+  - Comandos categorizados por funcionalidade
+  - 20+ comandos organizados em 5 categorias
+  - Descrições detalhadas de cada comando
+- **Validação Completa do Ambiente**: `make validate`
+  - Verificação de containers, conectividade e dados
+  - Relatório detalhado do estado do ambiente
+  - Detecção automática de problemas
+
+### 🔧 Melhorias Técnicas
+- **Scripts Shell Avançados**:
+  - `scripts/monitor.sh`: Sistema de monitoramento completo
+  - `scripts/benchmark.sh`: Framework de benchmark de performance
+  - `scripts/validate.sh`: Validação abrangente do ambiente
+- **Makefile Expandido**: 
+  - 20+ comandos organizados por categoria
+  - Sistema de ajuda interativo
+  - Comandos para teste, monitoramento e benchmark
+- **Correções de Conectividade**:
+  - Resolvidos problemas de variáveis de ambiente no .env
+  - Comandos SQL otimizados e com escape adequado
+  - Melhor tratamento de erros e timeouts
+
+### 📊 Resultados de Performance
+- **Benchmark inicial** (ambiente local):
+  - MySQL: ~0.08s (SELECT), ~0.07s (JOIN)
+  - PostgreSQL: ~0.09s (SELECT), ~0.08s (JOIN)
+  - SQL Server: ~0.21s (SELECT), ~0.20s (JOIN)
+
+### 🐛 Correções Importantes
+- Corrigida expansão de variáveis no arquivo .env
+- Resolvidos erros de sintaxe SQL em comandos de informação
+- Melhorada compatibilidade com diferentes shells (zsh/bash)
+- Corrigidos problemas de permissão em scripts
+
 ## [2.1.0] - 2024-10-21
 
 ### 🌍 Suporte Multi-Arquitetura
