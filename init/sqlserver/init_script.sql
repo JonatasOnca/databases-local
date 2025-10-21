@@ -71,6 +71,7 @@ CREATE TABLE logs (
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE()
 );
+GO
 
 -- Triggers para atualizar automaticamente o campo updated_at
 CREATE TRIGGER tr_clientes_updated_at
@@ -82,6 +83,7 @@ BEGIN
     SET updated_at = GETDATE() 
     WHERE id IN (SELECT id FROM inserted);
 END;
+GO
 
 CREATE TRIGGER tr_produtos_updated_at
 ON produtos
@@ -92,6 +94,7 @@ BEGIN
     SET updated_at = GETDATE() 
     WHERE id IN (SELECT id FROM inserted);
 END;
+GO
 
 CREATE TRIGGER tr_pedidos_updated_at
 ON pedidos
@@ -102,6 +105,7 @@ BEGIN
     SET updated_at = GETDATE() 
     WHERE id IN (SELECT id FROM inserted);
 END;
+GO
 
 CREATE TRIGGER tr_itens_pedido_updated_at
 ON itens_pedido
@@ -113,6 +117,7 @@ BEGIN
     WHERE pedido_id IN (SELECT pedido_id FROM inserted) 
     AND produto_id IN (SELECT produto_id FROM inserted);
 END;
+GO
 
 CREATE TRIGGER tr_logs_updated_at
 ON logs
@@ -123,3 +128,4 @@ BEGIN
     SET updated_at = GETDATE() 
     WHERE id IN (SELECT id FROM inserted);
 END;
+GO
