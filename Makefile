@@ -93,18 +93,18 @@ load-sample-data:
 	@echo "PostgreSQL:"
 	docker exec -i postgres_db psql -U $$(grep '^POSTGRES_USER' .env | cut -d '=' -f2) -d $$(grep '^POSTGRES_DB' .env | cut -d '=' -f2) < init/postgres/sample_data.sql
 	@echo "SQL Server:"
-	docker exec -i sqlserver_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "$$(grep '^SA_PASSWORD' .env | cut -d '=' -f2)" -C -i /dev/stdin < init/sqlserver/sample_data.sql
+	docker exec -i sqlserver_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "$$(grep '^SA_PASSWORD' .env | cut -d '=' -f2)" -C -d testdb -i /dev/stdin < init/sqlserver/sample_data.sql
 	@echo "Dados carregados com sucesso!"
 
 # Recarrega dados (limpa e carrega novamente)
 reload-sample-data:
 	@echo "Limpando e recarregando dados de exemplo..."
 	@echo "MySQL - Limpando dados existentes:"
-	@docker exec mysql_db mysql -u$$(grep '^DB_USER' .env | cut -d '=' -f2) -p$$(grep '^DB_PASSWORD' .env | cut -d '=' -f2) $$(grep '^DB_NAME' .env | cut -d '=' -f2) -e "DELETE FROM itens_pedido; DELETE FROM pedidos; DELETE FROM produtos; DELETE FROM clientes; DELETE FROM logs;"
+	@docker exec mysql_db mysql -u$$(grep '^DB_USER' .env | cut -d '=' -f2) -p$$(grep '^DB_PASSWORD' .env | cut -d '=' -f2) $$(grep '^DB_NAME' .env | cut -d '=' -f2) -e "SET FOREIGN_KEY_CHECKS = 0; TRUNCATE TABLE itens_pedido; TRUNCATE TABLE pedidos; TRUNCATE TABLE produtos; TRUNCATE TABLE clientes; TRUNCATE TABLE logs; SET FOREIGN_KEY_CHECKS = 1;"
 	@echo "PostgreSQL - Limpando dados existentes:"
-	@docker exec postgres_db psql -U $$(grep '^POSTGRES_USER' .env | cut -d '=' -f2) -d $$(grep '^POSTGRES_DB' .env | cut -d '=' -f2) -c "DELETE FROM itens_pedido; DELETE FROM pedidos; DELETE FROM produtos; DELETE FROM clientes; DELETE FROM logs;"
+	@docker exec postgres_db psql -U $$(grep '^POSTGRES_USER' .env | cut -d '=' -f2) -d $$(grep '^POSTGRES_DB' .env | cut -d '=' -f2) -c "TRUNCATE TABLE itens_pedido, pedidos, produtos, clientes, logs RESTART IDENTITY CASCADE;"
 	@echo "SQL Server - Limpando dados existentes:"
-	@docker exec sqlserver_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "$$(grep '^SA_PASSWORD' .env | cut -d '=' -f2)" -C -Q "DELETE FROM itens_pedido; DELETE FROM pedidos; DELETE FROM produtos; DELETE FROM clientes; DELETE FROM logs;"
+	@docker exec sqlserver_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "$$(grep '^SA_PASSWORD' .env | cut -d '=' -f2)" -C -d testdb -Q "TRUNCATE TABLE itens_pedido; TRUNCATE TABLE logs; DELETE FROM pedidos; DELETE FROM produtos; DELETE FROM clientes; DBCC CHECKIDENT('pedidos', RESEED, 0); DBCC CHECKIDENT('produtos', RESEED, 0); DBCC CHECKIDENT('clientes', RESEED, 0);"
 	@echo "Carregando dados novamente..."
 	@$(MAKE) load-sample-data
 

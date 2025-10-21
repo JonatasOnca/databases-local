@@ -1,5 +1,8 @@
 -- Dados de exemplo específicos para MySQL
 
+-- Desabilitar verificação de foreign keys temporariamente
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- Inserir clientes
 INSERT INTO clientes (nome, email) VALUES 
 ('João Silva', 'joao@email.com'),
@@ -31,3 +34,6 @@ INSERT INTO itens_pedido (pedido_id, produto_id, quantidade) VALUES
 INSERT INTO logs (mensagem) VALUES 
 ('Sistema inicializado'),
 ('Dados de exemplo inseridos');
+
+-- Reabilitar verificação de foreign keys
+SET FOREIGN_KEY_CHECKS = 1;
