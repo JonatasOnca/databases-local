@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      # As variáveis são carregadas do arquivo .env
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      # Mapeia o script de inicialização para o diretório de entrada do MySQL
+      - ./init/mysql/init_script.sql:/docker-entrypoint-initdb.d/init_script.sql
+      - mysql_data:/var/lib/mysql
+
+  postgres_db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Mapeia o script de inicialização para o diretório de entrada do PostgreSQL
+      - ./init/postgres/init_script.sql:/docker-entrypoint-initdb.d/init_script.sql
+      - postgres_data:/var/lib/postgresql/data
+
+  sqlserver_db:
+    # SQL Server no Linux
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_db
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: ${ACCEPT_EULA}
+    ports:
+      - "1433:1433"
+    volumes:
+      # MSSQL não usa o mesmo diretório. Precisamos de um script shell customizado.
+      # Para simplicidade, confiaremos que a imagem base irá funcionar, mas pode ser necessário um script .sh
+      # (O exemplo abaixo usa o método de volumes, que precisa ser ajustado com um script .sh para MSSQL)
+      - ./init/sqlserver/init_script.sql:/usr/config/init_script.sql # Um caminho de exemplo, deve ser executado manualmente
+      - sqlserver_data:/var/opt/mssql
+
+volumes:
+  mysql_data:
+  postgres_data:
+  sqlserver_data:
