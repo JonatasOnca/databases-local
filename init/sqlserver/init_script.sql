@@ -1,6 +1,21 @@
 -- O comando CREATE DATABASE não é necessário aqui,
 -- pois as imagens Docker criam o DB automaticamente com as variáveis de ambiente.
 
+-- Criar usuário devuser para compatibilidade com outros bancos
+IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'devuser')
+BEGIN
+    CREATE LOGIN devuser WITH PASSWORD = 'DevP@ssw0rd!';
+END;
+
+USE testdb;
+
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'devuser')
+BEGIN
+    CREATE USER devuser FOR LOGIN devuser;
+    ALTER ROLE db_owner ADD MEMBER devuser;
+END;
+GO
+
 -- Tabela 1: Clientes
 CREATE TABLE clientes (
     id INT PRIMARY KEY IDENTITY(1,1),

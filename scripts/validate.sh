@@ -5,6 +5,11 @@
 
 set -e
 
+# Carregar variáveis de ambiente
+if [ -f .env ]; then
+    source .env
+fi
+
 echo "🔍 Validando ambiente de bancos de dados..."
 
 # Cores para output
@@ -79,7 +84,12 @@ fi
 
 # Verificar conectividade SQL Server
 if [ $sqlserver_running -eq 0 ]; then
-    check_connectivity "sqlserver_db" "SQL Server" "/opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P '${SA_PASSWORD}' -C -Q 'SELECT 1' -h -1"
+    # Usar uma abordagem mais direta para o SQL Server
+    if docker exec sqlserver_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "${SA_PASSWORD}" -C -Q "SELECT 1" -h -1 >/dev/null 2>&1; then
+        print_status 0 "SQL Server está respondendo"
+    else
+        print_status 1 "SQL Server não está respondendo"
+    fi
 fi
 
 echo ""
