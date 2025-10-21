@@ -1,60 +1,34 @@
 # 🗄️ Local Database Environment
 
-Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de banco de dados (MySQL, PostgreSQL e SQL Server) usando Docker Compose.
-
-## 📋 Requisitos
-
-- Docker
-- Docker Compose
-- Make (opcional, mas recomendado)
-
-### 🏗️ Compatibilidade Multi-Arquitetura
-
-| Sistema | MySQL | PostgreSQL | SQL Server |
-|---------|-------|------------|------------|
-| Windows (x64) | ✅ Nativo | ✅ Nativo | ✅ Nativo |
-| Linux (x64) | ✅ Nativo | ✅ Nativo | ✅ Nativo |
-| Mac Intel | ✅ Nativo | ✅ Nativo | ✅ Nativo |
-| Mac M1/M2 | ✅ Nativo | ✅ Nativo | ⚠️ Emulação |
-
-**Nota**: SQL Server no Mac M1/M2 executa via emulação x86_64 (performance reduzida)
+Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de banco de dados (MySQL, PostgreSQL e SQL Server) usando Docker Compose. Agora com **setup inteligente**, **health check avançado** e **backup automatizado**.
 
 ## 🚀 Início Rápido
 
-1. **Clone o repositório e configure o ambiente:**
-   ```bash
-   cp .env.example .env
-   # Edite o arquivo .env com suas credenciais preferidas
-   ```
+### Setup Automático (Recomendado)
+```bash
+# Setup inteligente com detecção automática
+make smart-setup
 
-2. **Inicie todos os bancos de dados:**
-   ```bash
-   make up
-   # ou
-   docker-compose up -d
-   ```
+# Ou setup rápido com início automático
+make quick-start
+```
 
-3. **Conecte-se aos bancos:**
-   ```bash
-   # MySQL
-   make mysql-cli
-   
-   # PostgreSQL
-   make postgres-cli
-   
-   # SQL Server
-   make sqlserver-cli
-   ```
+### Setup Manual
+```bash
+# 1. Configure o ambiente
+cp .env.example .env
+# Edite o arquivo .env se necessário
 
-4. **Detecte sua arquitetura e obtenha recomendações:**
-   ```bash
-   make detect
-   ```
+# 2. Inicie os bancos (comando sugerido baseado na sua arquitetura)
+make detect    # Veja as recomendações
+make up-native # Para Mac M1/M2 ou make up para outras arquiteturas
 
-5. **Valide o ambiente:**
-   ```bash
-   make validate
-   ```
+# 3. Carregue dados de exemplo
+make load-sample-data
+
+# 4. Valide o ambiente
+make health-check
+```
 
 ## 📋 Profiles (Execução Seletiva)
 
@@ -156,6 +130,33 @@ Verifica:
 - Conectividade
 - Dados de exemplo
 - Configurações
+
+### Health Check Avançado
+```bash
+make health-check  # Verificação completa de saúde
+```
+
+Monitora:
+- Status e métricas dos containers (CPU, memória)
+- Tempo de resposta dos bancos
+- Verificação de portas e rede
+- Alertas automáticos para problemas
+- Log detalhado de eventos
+
+### Backup Automatizado
+```bash
+make backup-auto     # Backup completo de todos os bancos
+make setup-backup-cron  # Configura backup automático diário
+make verify-backups  # Verifica integridade dos backups
+make backup-report   # Relatório detalhado de backups
+```
+
+Recursos:
+- Backup comprimido com rotação automática
+- Suporte a MySQL, PostgreSQL e SQL Server
+- Verificação de integridade automática
+- Agendamento via cron
+- Relatórios detalhados
 
 ## 🗂️ Estrutura de Arquivos
 

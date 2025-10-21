@@ -2,6 +2,68 @@
 
 Todas as mudanças notáveis do projeto serão documentadas neste arquivo.
 
+## [3.1.0] - 2025-10-21
+
+### 🚀 Novos Recursos Principais
+- **Setup Inteligente**: `make smart-setup` / `make quick-start`
+  - Detecção automática de hardware e configuração otimizada
+  - Configuração automática de limites de memória e CPU
+  - Criação de .env personalizado com senhas únicas
+  - Configuração de ferramentas de desenvolvimento
+- **Health Check Avançado**: `make health-check`
+  - Monitoramento detalhado de CPU, memória e tempo de resposta
+  - Alertas automáticos para recursos críticos
+  - Verificação de portas e conectividade de rede
+  - Logs estruturados com diferentes níveis (INFO, WARN, ERROR)
+  - Compatibilidade total com macOS e Linux
+- **Sistema de Backup Automatizado**: `make backup-auto`
+  - Backup comprimido de MySQL, PostgreSQL e SQL Server
+  - Rotação automática de backups antigos (30 dias)
+  - Verificação de integridade dos arquivos
+  - Agendamento via cron com `make setup-backup-cron`
+  - Relatórios detalhados de status
+
+### 🔧 Melhorias Técnicas Avançadas
+- **Arquivo .env.example Expandido**:
+  - Documentação completa de todas as variáveis
+  - Comentários explicativos sobre requisitos de cada banco
+  - Configurações avançadas para desenvolvimento e produção
+  - Notas sobre compatibilidade multi-arquitetura
+- **Scripts Shell Profissionais**:
+  - `scripts/health-check.sh`: Health check com métricas avançadas
+  - `scripts/backup-auto.sh`: Sistema completo de backup
+  - `scripts/smart-setup.sh`: Configuração inteligente
+  - Tratamento robusto de erros e logging estruturado
+  - Compatibilidade macOS/Linux com detecção automática
+- **Makefile Expandido para 30+ Comandos**:
+  - Categorização em 7 grupos funcionais
+  - Comandos de backup, health check e setup inteligente
+  - Sistema de ajuda interativo melhorado
+
+### 📊 Funcionalidades de Monitoramento
+- **Health Check com Alertas**:
+  - Limiar de CPU: 80% (configurável)
+  - Limiar de memória: 80% (configurável)
+  - Tempo de resposta: 1.0s (configurável)
+  - Verificação de uptime e recursos
+- **Backup com Verificação**:
+  - Compressão com nível 6 (otimizado)
+  - Verificação de espaço em disco antes do backup
+  - Detecção automática de arquivos corrompidos
+  - Relatórios de tamanho e estatísticas
+
+### 🐛 Correções de Compatibilidade
+- Corrigidos comandos `date` para compatibilidade macOS
+- Substitído `netstat` por `lsof` no macOS para verificação de portas
+- Melhorada detecção de arquitetura para diferentes sistemas
+- Corrigidos problemas de parsing de variáveis de ambiente
+
+### 🎯 Experiência do Usuário
+- **Setup de 30 segundos**: `make quick-start` configura e inicia tudo
+- **Detecção inteligente**: Recomendações baseadas no hardware
+- **Comandos intuitivos**: Sistema de ajuda categorizado
+- **Logs estruturados**: Facilita debugging e monitoramento
+
 ## [3.0.0] - 2024-12-28
 
 ### 🚀 Novos Recursos Major

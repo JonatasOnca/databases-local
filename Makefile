@@ -175,6 +175,46 @@ benchmark:
 	@echo "Executando benchmark básico dos bancos de dados..."
 	@./scripts/benchmark.sh
 
+# Executa health check avançado
+health-check:
+	@echo "Executando health check avançado..."
+	@./scripts/health-check.sh
+
+# Executa backup automatizado
+backup-auto:
+	@echo "Executando backup automatizado..."
+	@./scripts/backup-auto.sh --all
+
+# Configura backup automático via cron
+setup-backup-cron:
+	@echo "Configurando backup automático..."
+	@./scripts/backup-auto.sh --setup-cron
+
+# Verifica integridade dos backups
+verify-backups:
+	@echo "Verificando integridade dos backups..."
+	@./scripts/backup-auto.sh --verify
+
+# Gera relatório de backups
+backup-report:
+	@echo "Gerando relatório de backups..."
+	@./scripts/backup-auto.sh --report
+
+# Limpa backups antigos
+cleanup-backups:
+	@echo "Limpando backups antigos..."
+	@./scripts/backup-auto.sh --cleanup
+
+# Setup inteligente do ambiente
+smart-setup:
+	@echo "Executando setup inteligente..."
+	@./scripts/smart-setup.sh
+
+# Setup com auto-start
+quick-start:
+	@echo "Setup rápido com início automático..."
+	@./scripts/smart-setup.sh --auto-start
+
 # ==============================================================================
 # Targets Auxiliares
 # ==============================================================================
@@ -220,10 +260,20 @@ help:
 	@echo "  make validate        - Validação completa do ambiente"
 	@echo "  make test-audit      - Testa campos de auditoria"
 	@echo "  make benchmark       - Benchmark básico de performance"
+	@echo "  make health-check    - Health check avançado"
+	@echo ""
+	@echo "💾 Backup:"
+	@echo "  make backup-auto     - Backup automatizado completo"
+	@echo "  make setup-backup-cron - Configura backup automático"
+	@echo "  make verify-backups  - Verifica integridade dos backups"
+	@echo "  make backup-report   - Relatório de backups"
+	@echo "  make cleanup-backups - Limpa backups antigos"
 	@echo ""
 	@echo "🏗️  Sistema:"
 	@echo "  make detect          - Detecta arquitetura e recomendações"
 	@echo "  make check-arch      - Verificação rápida da arquitetura"
+	@echo "  make smart-setup     - Setup inteligente do ambiente"
+	@echo "  make quick-start     - Setup rápido com início automático"
 	@echo "  make help            - Mostra esta ajuda"
 	@echo ""
 	@echo "💡 Exemplos rápidos:"
@@ -233,4 +283,4 @@ help:
 
 # Remove os arquivos de volumes criados para permitir uma nova inicialização do DB (reset)
 # **Não remove os dados persistentes, apenas a configuração de inicialização**
-.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data reload-sample-data backup test-audit validate detect info test-connections monitor benchmark check-arch help all
+.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data reload-sample-data backup test-audit validate detect info test-connections monitor benchmark check-arch help all health-check backup-auto setup-backup-cron verify-backups backup-report cleanup-backups smart-setup quick-start
