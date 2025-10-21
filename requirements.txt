@@ -1,0 +1,10 @@
+# Dependências necessárias para o Sistema de Gerenciamento Automático de Dados
+
+# Drivers de banco de dados
+pymysql>=1.1.0          # MySQL
+psycopg2-binary>=2.9.7  # PostgreSQL  
+pymssql>=2.3.8          # SQL Server (alternativa mais simples)
+
+# Utilitários opcionais para melhor experiência
+colorama>=0.4.6         # Cores no terminal (opcional)
+python-dotenv>=1.0.0    # Suporte a arquivos .env (opcional)

@@ -261,6 +261,141 @@ validate-migration:
 	fi
 
 # ==============================================================================
+# Gerenciamento Automático de Dados
+# ==============================================================================
+
+# Instala dependências Python necessárias
+install-python-deps:
+	@echo "📦 Instalando dependências Python..."
+	@python3 -m pip install -r requirements.txt
+	@echo "✅ Dependências instaladas com sucesso!"
+
+# Inicia o gerenciador automático para MySQL
+auto-data-mysql:
+	@echo "🚀 Iniciando gerenciamento automático de dados - MySQL"
+	@echo "⏰ Executa operações INSERT/UPDATE a cada 30 segundos"
+	@echo "🔄 Pressione Ctrl+C para parar"
+	@python3 scripts/auto-data-manager.py mysql
+
+# Inicia o gerenciador automático para PostgreSQL
+auto-data-postgres:
+	@echo "🚀 Iniciando gerenciamento automático de dados - PostgreSQL"
+	@echo "⏰ Executa operações INSERT/UPDATE a cada 30 segundos"
+	@echo "🔄 Pressione Ctrl+C para parar"
+	@python3 scripts/auto-data-manager.py postgres
+
+# Inicia o gerenciador automático para SQL Server
+auto-data-sqlserver:
+	@echo "🚀 Iniciando gerenciamento automático de dados - SQL Server"
+	@echo "⏰ Executa operações INSERT/UPDATE a cada 30 segundos"
+	@echo "🔄 Pressione Ctrl+C para parar"
+	@python3 scripts/auto-data-manager.py sqlserver
+
+# Inicia o gerenciador automático para todos os bancos (em paralelo)
+auto-data-all:
+	@echo "🚀 Iniciando gerenciamento automático para TODOS os bancos"
+	@echo "⏰ Executa operações INSERT/UPDATE a cada 30 segundos em cada banco"
+	@echo "🔄 Pressione Ctrl+C para parar todos"
+	@echo ""
+	@echo "Iniciando MySQL em background..."
+	@nohup python3 scripts/auto-data-manager.py mysql > logs/auto-mysql.log 2>&1 &
+	@echo "Iniciando PostgreSQL em background..."
+	@nohup python3 scripts/auto-data-manager.py postgres > logs/auto-postgres.log 2>&1 &
+	@echo "Iniciando SQL Server em background..."
+	@nohup python3 scripts/auto-data-manager.py sqlserver > logs/auto-sqlserver.log 2>&1 &
+	@echo ""
+	@echo "✅ Todos os gerenciadores iniciados em background!"
+	@echo "📋 Logs disponíveis em: logs/auto-*.log"
+	@echo "⏹️  Para parar: make stop-auto-data"
+
+# Para todos os gerenciadores automáticos
+stop-auto-data:
+	@echo "⏹️  Parando todos os gerenciadores automáticos..."
+	@pkill -f "auto-data-manager.py" || echo "Nenhum processo encontrado"
+	@echo "✅ Gerenciadores parados!"
+
+# Mostra o status dos gerenciadores automáticos
+status-auto-data:
+	@echo "📊 Status dos Gerenciadores Automáticos"
+	@echo "======================================="
+	@echo ""
+	@if pgrep -f "auto-data-manager.py mysql" > /dev/null; then \
+		echo "✅ MySQL: RODANDO (PID: $$(pgrep -f 'auto-data-manager.py mysql'))"; \
+	else \
+		echo "❌ MySQL: PARADO"; \
+	fi
+	@if pgrep -f "auto-data-manager.py postgres" > /dev/null; then \
+		echo "✅ PostgreSQL: RODANDO (PID: $$(pgrep -f 'auto-data-manager.py postgres'))"; \
+	else \
+		echo "❌ PostgreSQL: PARADO"; \
+	fi
+	@if pgrep -f "auto-data-manager.py sqlserver" > /dev/null; then \
+		echo "✅ SQL Server: RODANDO (PID: $$(pgrep -f 'auto-data-manager.py sqlserver'))"; \
+	else \
+		echo "❌ SQL Server: PARADO"; \
+	fi
+
+# Mostra logs dos gerenciadores em tempo real
+logs-auto-data:
+	@echo "📋 Logs dos Gerenciadores Automáticos (Ctrl+C para sair)"
+	@echo "========================================================="
+	@if [ -f logs/auto-mysql.log ] || [ -f logs/auto-postgres.log ] || [ -f logs/auto-sqlserver.log ]; then \
+		tail -f logs/auto-*.log 2>/dev/null; \
+	else \
+		echo "❌ Nenhum log encontrado. Execute primeiro: make auto-data-all"; \
+	fi
+
+# Limpa logs dos gerenciadores
+clean-auto-logs:
+	@echo "🧹 Limpando logs dos gerenciadores automáticos..."
+	@rm -f logs/auto-*.log logs/auto-data-manager.log
+	@echo "✅ Logs limpos!"
+
+# Inicialização interativa dos gerenciadores automáticos
+start-auto-data:
+	@echo "🚀 Inicialização Interativa do Gerenciamento Automático"
+	@./scripts/start-auto-data.sh
+
+# Demonstração rápida do sistema (MySQL)
+demo-auto-data:
+	@echo "🎬 Demonstração do Gerenciamento Automático - MySQL (30 segundos)"
+	@echo "📊 Executando operações INSERT/UPDATE automaticamente..."
+	@python3 scripts/auto-data-demo.py mysql 30
+
+# Demonstração com PostgreSQL
+demo-auto-data-postgres:
+	@echo "🎬 Demonstração do Gerenciamento Automático - PostgreSQL (30 segundos)"
+	@echo "📊 Executando operações INSERT/UPDATE automaticamente..."
+	@python3 scripts/auto-data-demo.py postgres 30
+
+# Demonstração rápida (15 segundos)
+demo-quick:
+	@echo "⚡ Demonstração Rápida - MySQL (15 segundos)"
+	@python3 scripts/auto-data-demo.py mysql 15
+
+# Demonstração com SQL Server
+demo-auto-data-sqlserver:
+	@echo "🎬 Demonstração do Gerenciamento Automático - SQL Server (20 segundos)"
+	@echo "📊 Executando operações INSERT/UPDATE automaticamente..."
+	@python3 scripts/auto-data-sqlserver-test.py sqlserver 20
+
+# Demonstração completa de todos os bancos (sequencial)
+demo-all-databases:
+	@echo "🎬 Demonstração COMPLETA - Todos os Bancos de Dados"
+	@echo "===================================================="
+	@echo ""
+	@echo "1️⃣ Testando MySQL (15s)..."
+	@python3 scripts/auto-data-demo.py mysql 15
+	@echo ""
+	@echo "2️⃣ Testando PostgreSQL (15s)..."
+	@python3 scripts/auto-data-demo.py postgres 15
+	@echo ""
+	@echo "3️⃣ Testando SQL Server (20s)..."
+	@python3 scripts/auto-data-sqlserver-test.py sqlserver 20
+	@echo ""
+	@echo "🎉 TESTE COMPLETO FINALIZADO - Todos os 3 bancos testados com sucesso!"
+
+# ==============================================================================
 # Targets Auxiliares
 # ==============================================================================
 
@@ -326,6 +461,23 @@ help:
 	@echo "  make export-data DB=mysql - Exporta dados (mysql|postgres|sqlserver)"
 	@echo "  make validate-migration SOURCE=mysql TARGET=postgres - Valida migração"
 	@echo ""
+	@echo "🤖 Gerenciamento Automático de Dados:"
+	@echo "  make demo-quick          - ⚡ Demonstração rápida MySQL (15s)"
+	@echo "  make demo-auto-data      - 🎬 Demonstração MySQL (30s)"  
+	@echo "  make demo-auto-data-postgres - 🎬 Demonstração PostgreSQL (30s)"
+	@echo "  make demo-auto-data-sqlserver - 🎬 Demonstração SQL Server (20s)"
+	@echo "  make demo-all-databases  - 🎯 TESTE COMPLETO de todos os bancos"
+	@echo "  make start-auto-data     - 🚀 Inicialização interativa (RECOMENDADO)"
+	@echo "  make install-python-deps - Instala dependências Python"
+	@echo "  make auto-data-mysql     - Gerenciador automático MySQL"
+	@echo "  make auto-data-postgres  - Gerenciador automático PostgreSQL"
+	@echo "  make auto-data-sqlserver - Gerenciador automático SQL Server"
+	@echo "  make auto-data-all       - Gerenciador automático TODOS os bancos"
+	@echo "  make stop-auto-data      - Para todos os gerenciadores"
+	@echo "  make status-auto-data    - Status dos gerenciadores"
+	@echo "  make logs-auto-data      - Logs em tempo real"
+	@echo "  make clean-auto-logs     - Limpa logs dos gerenciadores"
+	@echo ""
 	@echo "🏗️  Sistema:"
 	@echo "  make detect          - Detecta arquitetura e recomendações"
 	@echo "  make check-arch      - Verificação rápida da arquitetura"
@@ -342,4 +494,4 @@ help:
 
 # Remove os arquivos de volumes criados para permitir uma nova inicialização do DB (reset)
 # **Não remove os dados persistentes, apenas a configuração de inicialização**
-.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data reload-sample-data backup test-audit validate detect info test-connections monitor benchmark check-arch help all health-check backup-auto setup-backup-cron verify-backups backup-report cleanup-backups smart-setup quick-start test-suite collect-metrics realtime-metrics prometheus-metrics migrate export-data validate-migration
+.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data reload-sample-data backup test-audit validate detect info test-connections monitor benchmark check-arch help all health-check backup-auto setup-backup-cron verify-backups backup-report cleanup-backups smart-setup quick-start test-suite collect-metrics realtime-metrics prometheus-metrics migrate export-data validate-migration install-python-deps auto-data-mysql auto-data-postgres auto-data-sqlserver auto-data-all stop-auto-data status-auto-data logs-auto-data clean-auto-logs start-auto-data demo-auto-data demo-auto-data-postgres demo-auto-data-sqlserver demo-quick demo-all-databases
