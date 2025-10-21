@@ -215,6 +215,51 @@ quick-start:
 	@echo "Setup rápido com início automático..."
 	@./scripts/smart-setup.sh --auto-start
 
+# Executa suite completa de testes
+test-suite:
+	@echo "Executando suite de testes automatizados..."
+	@./scripts/test-suite.sh
+
+# Coleta métricas de performance e recursos
+collect-metrics:
+	@echo "Coletando métricas do sistema..."
+	@./scripts/metrics-collector.sh --collect
+
+# Monitor de métricas em tempo real
+realtime-metrics:
+	@echo "Iniciando monitoramento de métricas em tempo real..."
+	@./scripts/metrics-collector.sh --realtime
+
+# Gera métricas no formato Prometheus
+prometheus-metrics:
+	@echo "Gerando métricas para Prometheus..."
+	@./scripts/metrics-collector.sh --prometheus
+
+# Migração completa entre bancos
+migrate:
+	@echo "Sistema de migração de dados..."
+	@./scripts/migration-manager.sh help
+
+# Exportar dados de um banco específico
+export-data:
+	@echo "Exportando dados..."
+	@if [ -z "$(DB)" ]; then \
+		echo "Uso: make export-data DB=mysql|postgres|sqlserver"; \
+		echo "Exemplo: make export-data DB=mysql"; \
+	else \
+		./scripts/migration-manager.sh export-data $(DB); \
+	fi
+
+# Validar migração entre bancos
+validate-migration:
+	@echo "Validando migração..."
+	@if [ -z "$(SOURCE)" ] || [ -z "$(TARGET)" ]; then \
+		echo "Uso: make validate-migration SOURCE=mysql TARGET=postgres"; \
+		echo "Bancos suportados: mysql, postgres, sqlserver"; \
+	else \
+		./scripts/migration-manager.sh validate $(SOURCE) $(TARGET); \
+	fi
+
 # ==============================================================================
 # Targets Auxiliares
 # ==============================================================================
@@ -256,7 +301,8 @@ help:
 	@echo "  make reload-sample-data  - Recarrega dados (limpa e carrega)"
 	@echo "  make backup             - Cria backup dos bancos"
 	@echo ""
-	@echo "🧪 Testes:"
+	@echo "🧪 Testes e Qualidade:"
+	@echo "  make test-suite      - Suite completa de testes automatizados"
 	@echo "  make validate        - Validação completa do ambiente"
 	@echo "  make test-audit      - Testa campos de auditoria"
 	@echo "  make benchmark       - Benchmark básico de performance"
@@ -269,6 +315,17 @@ help:
 	@echo "  make backup-report   - Relatório de backups"
 	@echo "  make cleanup-backups - Limpa backups antigos"
 	@echo ""
+	@echo "📊 Métricas e Monitoramento:"
+	@echo "  make collect-metrics - Coleta métricas do sistema"
+	@echo "  make realtime-metrics - Monitor de métricas em tempo real"
+	@echo "  make prometheus-metrics - Gera métricas para Prometheus"
+	@echo "  make monitor         - Monitoramento completo"
+	@echo ""
+	@echo "🔄 Migração de Dados:"
+	@echo "  make migrate         - Sistema de migração entre bancos"
+	@echo "  make export-data DB=mysql - Exporta dados (mysql|postgres|sqlserver)"
+	@echo "  make validate-migration SOURCE=mysql TARGET=postgres - Valida migração"
+	@echo ""
 	@echo "🏗️  Sistema:"
 	@echo "  make detect          - Detecta arquitetura e recomendações"
 	@echo "  make check-arch      - Verificação rápida da arquitetura"
@@ -279,8 +336,10 @@ help:
 	@echo "💡 Exemplos rápidos:"
 	@echo "  make detect && make up-native    # Mac M1/M2 otimizado"
 	@echo "  make up && make load-sample-data # Ambiente completo com dados"
-	@echo "  make monitor                     # Monitoramento em tempo real"
+	@echo "  make test-suite                  # Executar todos os testes"
+	@echo "  make realtime-metrics            # Monitoramento em tempo real"
+	@echo "  make migrate                     # Ver opções de migração"
 
 # Remove os arquivos de volumes criados para permitir uma nova inicialização do DB (reset)
 # **Não remove os dados persistentes, apenas a configuração de inicialização**
-.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data reload-sample-data backup test-audit validate detect info test-connections monitor benchmark check-arch help all health-check backup-auto setup-backup-cron verify-backups backup-report cleanup-backups smart-setup quick-start
+.PHONY: up up-mysql up-postgres up-sqlserver up-native down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data reload-sample-data backup test-audit validate detect info test-connections monitor benchmark check-arch help all health-check backup-auto setup-backup-cron verify-backups backup-report cleanup-backups smart-setup quick-start test-suite collect-metrics realtime-metrics prometheus-metrics migrate export-data validate-migration

@@ -1,6 +1,6 @@
 # 🗄️ Local Database Environment
 
-Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de banco de dados (MySQL, PostgreSQL e SQL Server) usando Docker Compose. Agora com **setup inteligente**, **health check avançado** e **backup automatizado**.
+Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de banco de dados (MySQL, PostgreSQL e SQL Server) usando Docker Compose. Agora com **setup inteligente**, **health check avançado**, **backup automatizado**, **testes automatizados** e **sistema de métricas**.
 
 ## 🚀 Início Rápido
 
@@ -86,8 +86,12 @@ make up
 | `make load-sample-data` | Carrega dados de exemplo |
 | `make reload-sample-data` | Recarrega dados (limpa e carrega) |
 | `make backup` | Cria backup dos bancos |
-| `make test-audit` | Testa campos de auditoria |
-| `make help` | Mostra todos os comandos disponíveis |
+| `make test-suite` | Suite completa de testes automatizados |
+| `make collect-metrics` | Coleta métricas de performance e recursos |
+| `make realtime-metrics` | Monitor de métricas em tempo real |
+| `make migrate` | Sistema de migração entre bancos |
+| `make export-data DB=mysql` | Exporta dados de banco específico |
+| `make validate-migration SOURCE=mysql TARGET=postgres` | Valida migração entre bancos |
 
 ## 🔌 Portas e Conexões
 

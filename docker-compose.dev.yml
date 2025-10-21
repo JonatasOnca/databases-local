@@ -1,0 +1,237 @@
+# Docker Compose para ambiente completo de desenvolvimento
+# Inclui container de desenvolvimento com todas as ferramentas
+
+services:
+  # Containers de banco de dados (herdados do compose principal)
+  mysql_db:
+    extends:
+      file: docker-compose.yml
+      service: mysql_db
+    networks:
+      - dev_network
+
+  postgres_db:
+    extends:
+      file: docker-compose.yml
+      service: postgres_db
+    networks:
+      - dev_network
+
+  sqlserver_db:
+    extends:
+      file: docker-compose.yml
+      service: sqlserver_db
+    networks:
+      - dev_network
+
+  # Container de desenvolvimento
+  dev_environment:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: database_dev_env
+    profiles: ["dev", "all"]
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - SA_PASSWORD=${SA_PASSWORD}
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - dev_home:/home/developer
+      - jupyter_notebooks:/workspace/notebooks
+    ports:
+      - "8080:8080"  # code-server
+      - "8888:8888"  # jupyter
+    networks:
+      - dev_network
+    depends_on:
+      - mysql_db
+      - postgres_db
+      - sqlserver_db
+    restart: unless-stopped
+    command: >
+      bash -c "
+      # Aguardar bancos ficarem prontos
+      sleep 30 &&
+      # Iniciar code-server em background
+      code-server --bind-addr 0.0.0.0:8080 --auth none /workspace &
+      # Iniciar Jupyter em background
+      jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --notebook-dir=/workspace/notebooks &
+      # Manter container ativo
+      tail -f /dev/null
+      "
+
+  # Adminer para administração web dos bancos
+  adminer:
+    image: adminer:4.8.1
+    container_name: database_adminer
+    profiles: ["admin", "all"]
+    environment:
+      - ADMINER_DEFAULT_SERVER=mysql_db
+      - ADMINER_DESIGN=pepa-linha
+    ports:
+      - "8081:8080"
+    networks:
+      - dev_network
+    depends_on:
+      - mysql_db
+      - postgres_db
+      - sqlserver_db
+    restart: unless-stopped
+
+  # PHPMyAdmin específico para MySQL
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: database_phpmyadmin
+    profiles: ["admin", "all"]
+    environment:
+      PMA_HOST: mysql_db
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "8082:80"
+    networks:
+      - dev_network
+    depends_on:
+      - mysql_db
+    restart: unless-stopped
+
+  # pgAdmin para PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:7
+    container_name: database_pgadmin
+    profiles: ["admin", "all"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@database-local.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8083:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - dev_network
+    depends_on:
+      - postgres_db
+    restart: unless-stopped
+
+  # Prometheus para métricas
+  prometheus:
+    image: prom/prometheus:v2.40.0
+    container_name: database_prometheus
+    profiles: ["monitoring", "all"]
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - dev_network
+    restart: unless-stopped
+
+  # Grafana para visualização
+  grafana:
+    image: grafana/grafana:9.3.0
+    container_name: database_grafana
+    profiles: ["monitoring", "all"]
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - dev_network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # Redis para cache (opcional)
+  redis:
+    image: redis:7.0-alpine
+    container_name: database_redis
+    profiles: ["cache", "all"]
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dev_network
+    restart: unless-stopped
+
+  # Elasticsearch para logs (opcional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
+    container_name: database_elasticsearch
+    profiles: ["logging", "all"]
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - dev_network
+    restart: unless-stopped
+
+  # Kibana para visualização de logs
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.5.0
+    container_name: database_kibana
+    profiles: ["logging", "all"]
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - dev_network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+# Redes
+networks:
+  dev_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Volumes adicionais
+volumes:
+  dev_home:
+  jupyter_notebooks:
+  pgadmin_data:
+  prometheus_data:
+  grafana_data:
+  redis_data:
+  elasticsearch_data:
+
+  # Volumes herdados
+  mysql_data:
+    external: true
+  postgres_data:
+    external: true
+  sqlserver_data:
+    external: true
