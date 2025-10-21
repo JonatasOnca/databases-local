@@ -66,7 +66,7 @@ class DatabaseConfig:
         'port': 1433,
         'user': 'SA',
         'password': 'SuperSecureP@ssword!',
-        'database': 'master'
+        'database': 'testdb'
     }
 
 class DataManager:
