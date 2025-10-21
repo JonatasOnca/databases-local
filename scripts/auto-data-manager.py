@@ -161,11 +161,19 @@ class DataManager:
         """Obtém um ID aleatório existente de uma tabela"""
         try:
             cursor = self.connection.cursor()
-            cursor.execute(f"SELECT {id_column} FROM {table} ORDER BY RANDOM() LIMIT 1" if self.database_type == 'postgres' else f"SELECT {id_column} FROM {table} ORDER BY RAND() LIMIT 1")
+            if self.database_type == 'postgres':
+                query = f"SELECT {id_column} FROM {table} ORDER BY RANDOM() LIMIT 1"
+            elif self.database_type == 'sqlserver':
+                query = f"SELECT TOP 1 {id_column} FROM {table} ORDER BY NEWID()"
+            else:  # mysql
+                query = f"SELECT {id_column} FROM {table} ORDER BY RAND() LIMIT 1"
+            
+            cursor.execute(query)
             result = cursor.fetchone()
             cursor.close()
             return result[0] if result else None
-        except:
+        except Exception as e:
+            logging.error(f"❌ Erro ao obter ID aleatório da tabela {table}: {e}")
             return None
     
     def insert_cliente(self) -> bool:

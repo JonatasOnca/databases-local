@@ -131,7 +131,7 @@ class DatabaseConfig:
         'server': 'localhost,1433',
         'user': 'SA',
         'password': 'SuperSecureP@ssword!',
-        'database': 'master'
+        'database': 'testdb'
     }
 ```
 
