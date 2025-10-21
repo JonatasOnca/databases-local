@@ -35,19 +35,51 @@ logs:
 # Conecta ao shell do container MySQL
 mysql-cli:
 	@echo "Conectando ao MySQL..."
-	docker exec -it mysql_db mysql -u $(shell grep 'DB_USER' .env | cut -d '=' -f2) -p$(shell grep 'DB_NAME' .env | cut -d '=' -f2)
+	docker exec -it mysql_db mysql -u$$(grep '^DB_USER' .env | cut -d '=' -f2) -p$$(grep '^DB_PASSWORD' .env | cut -d '=' -f2) $$(grep '^DB_NAME' .env | cut -d '=' -f2)
 
 # Conecta ao shell do container PostgreSQL
 postgres-cli:
 	@echo "Conectando ao PostgreSQL..."
-	docker exec -it postgres_db psql -U $(shell grep 'DB_USER' .env | cut -d '=' -f2) -d $(shell grep 'DB_NAME' .env | cut -d '=' -f2)
+	docker exec -it postgres_db psql -U $$(grep '^POSTGRES_USER' .env | cut -d '=' -f2) -d $$(grep '^POSTGRES_DB' .env | cut -d '=' -f2)
 
 # Conecta ao SQL Server usando o cliente sqlcmd dentro do container
 sqlserver-cli:
 	@echo "Conectando ao SQL Server..."
-	# Usa o 'sqlcmd' dentro do container. Requer que o cliente esteja instalado.
-	# -S: Server (local) | -U: User (sa) | -P: Password (do .env)
-	docker exec -it sqlserver_db /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P $(SA_PASSWORD)
+	docker exec -it sqlserver_db /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "$$(grep '^SA_PASSWORD' .env | cut -d '=' -f2)"
+
+# Verifica o status dos containers
+status:
+	@echo "Status dos containers:"
+	@docker-compose -f $(COMPOSE_FILE) ps
+
+# Carrega dados de exemplo em todos os bancos
+load-sample-data:
+	@echo "Carregando dados de exemplo..."
+	@echo "MySQL:"
+	docker exec -i mysql_db mysql -u$$(grep '^DB_USER' .env | cut -d '=' -f2) -p$$(grep '^DB_PASSWORD' .env | cut -d '=' -f2) $$(grep '^DB_NAME' .env | cut -d '=' -f2) < init/mysql/sample_data.sql
+	@echo "PostgreSQL:"
+	docker exec -i postgres_db psql -U $$(grep '^POSTGRES_USER' .env | cut -d '=' -f2) -d $$(grep '^POSTGRES_DB' .env | cut -d '=' -f2) < init/postgres/sample_data.sql
+	@echo "SQL Server:"
+	docker exec -i sqlserver_db /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "$$(grep '^SA_PASSWORD' .env | cut -d '=' -f2)" -i /dev/stdin < init/sqlserver/sample_data.sql
+	@echo "Dados carregados com sucesso!"
+
+# Backup de todos os bancos
+backup:
+	@echo "Criando backup dos bancos..."
+	@mkdir -p backups
+	@echo "Backup MySQL..."
+	docker exec mysql_db mysqldump -u$$(grep '^DB_USER' .env | cut -d '=' -f2) -p$$(grep '^DB_PASSWORD' .env | cut -d '=' -f2) $$(grep '^DB_NAME' .env | cut -d '=' -f2) > backups/mysql_backup_$$(date +%Y%m%d_%H%M%S).sql
+	@echo "Backup PostgreSQL..."
+	docker exec postgres_db pg_dump -U $$(grep '^POSTGRES_USER' .env | cut -d '=' -f2) $$(grep '^POSTGRES_DB' .env | cut -d '=' -f2) > backups/postgres_backup_$$(date +%Y%m%d_%H%M%S).sql
+	@echo "Backups criados na pasta backups/"
+
+# Testa a funcionalidade dos campos de auditoria
+test-audit:
+	@echo "Testando campos de auditoria..."
+	@echo "MySQL - Atualizando cliente 1:"
+	@docker exec mysql_db mysql -u$$(grep '^DB_USER' .env | cut -d '=' -f2) -p$$(grep '^DB_PASSWORD' .env | cut -d '=' -f2) $$(grep '^DB_NAME' .env | cut -d '=' -f2) -e "UPDATE clientes SET nome='João Silva Santos' WHERE id=1; SELECT id, nome, created_at, updated_at FROM clientes WHERE id=1;"
+	@echo "PostgreSQL - Atualizando produto 1:"
+	@docker exec postgres_db psql -U $$(grep '^POSTGRES_USER' .env | cut -d '=' -f2) -d $$(grep '^POSTGRES_DB' .env | cut -d '=' -f2) -c "UPDATE produtos SET preco=2600.00 WHERE id=1; SELECT id, nome, created_at, updated_at FROM produtos WHERE id=1;"
 
 # ==============================================================================
 # Targets Auxiliares
@@ -58,4 +90,4 @@ all: up
 
 # Remove os arquivos de volumes criados para permitir uma nova inicialização do DB (reset)
 # **Não remove os dados persistentes, apenas a configuração de inicialização**
-.PHONY: up down clean restart logs mysql-cli postgres-cli all
+.PHONY: up down clean restart logs mysql-cli postgres-cli sqlserver-cli status load-sample-data backup test-audit all
