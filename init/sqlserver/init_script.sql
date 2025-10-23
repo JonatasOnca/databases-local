@@ -482,6 +482,12 @@ EXEC sp_addextendedproperty
     @level2type = N'Column', @level2name = campo_sql_variant;
 
 EXEC sp_addextendedproperty 
+    @name = N'MS_Description', @value = N'Versão da linha (timestamp automático)',
+    @level0type = N'Schema', @level0name = dbo,
+    @level1type = N'Table', @level1name = generic_table,
+    @level2type = N'Column', @level2name = campo_rowversion;
+
+EXEC sp_addextendedproperty 
     @name = N'MS_Description', @value = N'Dados geométricos planares',
     @level0type = N'Schema', @level0name = dbo,
     @level1type = N'Table', @level1name = generic_table,

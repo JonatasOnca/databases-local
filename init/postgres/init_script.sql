@@ -225,6 +225,18 @@ COMMENT ON COLUMN generic_table.campo_daterange IS 'Range de datas';
 COMMENT ON COLUMN generic_table.created_at IS 'Data e hora de criação do registro';
 COMMENT ON COLUMN generic_table.updated_at IS 'Data e hora da última atualização';
 
+-- Comentários para os novos campos adicionados
+COMMENT ON COLUMN generic_table.campo_serial IS 'Tipo serial (auto incremento de 4 bytes)';
+COMMENT ON COLUMN generic_table.campo_bigserial IS 'Tipo big serial (auto incremento de 8 bytes)';
+COMMENT ON COLUMN generic_table.campo_name IS 'Tipo name (identificador interno do PostgreSQL)';
+COMMENT ON COLUMN generic_table.campo_timetz IS 'Hora com timezone (HH:MM:SS+TZ)';
+COMMENT ON COLUMN generic_table.campo_tsvector IS 'Vetor de busca textual (full text search)';
+COMMENT ON COLUMN generic_table.campo_tsquery IS 'Query de busca textual (full text search)';
+COMMENT ON COLUMN generic_table.campo_oid IS 'Identificador de objeto (OID)';
+COMMENT ON COLUMN generic_table.campo_tid IS 'Identificador de tupla (TID)';
+COMMENT ON COLUMN generic_table.campo_xid IS 'Identificador de transação (XID)';
+COMMENT ON COLUMN generic_table.campo_pg_lsn IS 'Log Sequence Number (PostgreSQL LSN)';
+
 -- Triggers para atualizar automaticamente o campo updated_at
 CREATE TRIGGER update_clientes_updated_at 
     BEFORE UPDATE ON clientes 
