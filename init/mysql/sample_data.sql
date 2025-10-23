@@ -39,32 +39,54 @@ INSERT INTO logs (mensagem) VALUES
 ('Sistema inicializado'),
 ('Dados de exemplo inseridos');
 
--- Inserir dados na tabela generic_table (exemplo com tipos de dados MySQL)
+-- Inserir dados na tabela generic_table (exemplo com TODOS os tipos de dados MySQL)
 INSERT INTO generic_table (
+    -- Tipos numéricos inteiros
     campo_tinyint, campo_tinyint_unsigned, campo_smallint, campo_smallint_unsigned, 
     campo_mediumint, campo_mediumint_unsigned, campo_int, campo_int_unsigned, 
     campo_bigint, campo_bigint_unsigned,
+    -- Tipos numéricos decimais
     campo_decimal, campo_float, campo_double,
+    -- Tipos de texto
     campo_char, campo_varchar, campo_text, campo_mediumtext, campo_longtext,
+    -- Tipos de data e hora
     campo_date, campo_time, campo_datetime, campo_year,
-    campo_binary, campo_varbinary, campo_blob,
+    -- Tipos binários
+    campo_binary, campo_varbinary, campo_blob, campo_mediumblob, campo_longblob,
+    -- Tipos especiais
     campo_boolean, campo_bit,
     campo_enum, campo_set,
     campo_json,
-    campo_geometry, campo_point, campo_linestring, campo_polygon
+    -- Tipos geométricos
+    campo_geometry, campo_point, campo_linestring, campo_polygon,
+    campo_multipoint, campo_multilinestring, campo_multipolygon, campo_geometrycollection
 ) VALUES (
+    -- Tipos numéricos inteiros
     127, 255, 32767, 65535, 8388607, 16777215, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615,
+    -- Tipos numéricos decimais
     99999999.99, 3.14159, 2.718281828459045,
+    -- Tipos de texto
     'CHAR_TEST', 'Este é um VARCHAR de exemplo', 'Este é um texto longo para demonstração do tipo TEXT',
     'Este é um texto médio para demonstração do tipo MEDIUMTEXT',
-    'Este é um texto muito longo para demonstração do tipo LONGTEXT',
+    'Este é um texto muito longo para demonstração do tipo LONGTEXT com mais conteúdo para atingir o tamanho necessário',
+    -- Tipos de data e hora
     '2024-01-15', '14:30:00', '2024-01-15 14:30:00', 2024,
+    -- Tipos binários
     UNHEX('48656C6C6F20576F726C64210000'), UNHEX('48656C6C6F'), UNHEX('48656C6C6F20576F726C6421'),
+    UNHEX('48656C6C6F20576F726C6421'), UNHEX('48656C6C6F20576F726C6421'),
+    -- Tipos especiais
     TRUE, b'10101010',
     'valor1', 'opcao1,opcao3',
-    '{"nome": "Exemplo", "valor": 123, "ativo": true}',
-    ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))'), ST_GeomFromText('POINT(10 20)'),
-    ST_GeomFromText('LINESTRING(0 0,1 1,2 2)'), ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))')
+    '{"nome": "Exemplo MySQL", "valor": 123, "ativo": true, "tipos": ["texto", "numero", "booleano"]}',
+    -- Tipos geométricos
+    ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))'), 
+    ST_GeomFromText('POINT(10 20)'),
+    ST_GeomFromText('LINESTRING(0 0,1 1,2 2)'), 
+    ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))'),
+    ST_GeomFromText('MULTIPOINT(0 0,1 1,2 2)'),
+    ST_GeomFromText('MULTILINESTRING((0 0,1 1,2 2),(3 3,4 4,5 5))'),
+    ST_GeomFromText('MULTIPOLYGON(((0 0,10 0,10 10,0 10,0 0)),((20 20,30 20,30 30,20 30,20 20)))'),
+    ST_GeomFromText('GEOMETRYCOLLECTION(POINT(0 0),LINESTRING(0 0,1 1))')
 );
 
 -- Reabilitar verificação de foreign keys
