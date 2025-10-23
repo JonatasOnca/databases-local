@@ -39,5 +39,30 @@ INSERT INTO logs (mensagem) VALUES
 ('Sistema inicializado'),
 ('Dados de exemplo inseridos');
 
+-- Inserir dados na tabela generic_table (exemplo com tipos de dados MySQL)
+INSERT INTO generic_table (
+    campo_tinyint, campo_smallint, campo_mediumint, campo_int, campo_bigint,
+    campo_decimal, campo_float, campo_double,
+    campo_char, campo_varchar, campo_text, campo_mediumtext, campo_longtext,
+    campo_date, campo_time, campo_datetime, campo_year,
+    campo_binary, campo_varbinary, campo_blob,
+    campo_boolean, campo_bit,
+    campo_enum, campo_set,
+    campo_json,
+    campo_geometry, campo_point
+) VALUES (
+    127, 32767, 8388607, 2147483647, 9223372036854775807,
+    99999999.99, 3.14159, 2.718281828459045,
+    'CHAR_TEST', 'Este é um VARCHAR de exemplo', 'Este é um texto longo para demonstração do tipo TEXT',
+    'Este é um texto médio para demonstração do tipo MEDIUMTEXT',
+    'Este é um texto muito longo para demonstração do tipo LONGTEXT',
+    '2024-01-15', '14:30:00', '2024-01-15 14:30:00', 2024,
+    UNHEX('48656C6C6F20576F726C64210000'), UNHEX('48656C6C6F'), UNHEX('48656C6C6F20576F726C6421'),
+    TRUE, b'10101010',
+    'valor1', 'opcao1,opcao3',
+    '{"nome": "Exemplo", "valor": 123, "ativo": true}',
+    ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))'), ST_GeomFromText('POINT(10 20)')
+);
+
 -- Reabilitar verificação de foreign keys
 SET FOREIGN_KEY_CHECKS = 1;

@@ -53,3 +53,48 @@ CREATE TABLE IF NOT EXISTS logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data e hora de criação do registro',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data e hora da última atualização'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela que armazena logs do sistema';
+
+-- Tabela 6: Generic Table - Demonstração de tipos de dados MySQL
+CREATE TABLE IF NOT EXISTS generic_table (
+    id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'Chave primária auto incremento',
+    -- Tipos numéricos inteiros
+    campo_tinyint TINYINT COMMENT 'Inteiro muito pequeno (-128 a 127)',
+    campo_smallint SMALLINT COMMENT 'Inteiro pequeno (-32768 a 32767)',
+    campo_mediumint MEDIUMINT COMMENT 'Inteiro médio (-8388608 a 8388607)',
+    campo_int INT COMMENT 'Inteiro padrão (-2147483648 a 2147483647)',
+    campo_bigint BIGINT COMMENT 'Inteiro grande (-9223372036854775808 a 9223372036854775807)',
+    -- Tipos numéricos decimais
+    campo_decimal DECIMAL(10,2) COMMENT 'Decimal fixo com precisão (10 dígitos, 2 decimais)',
+    campo_float FLOAT COMMENT 'Ponto flutuante de precisão simples',
+    campo_double DOUBLE COMMENT 'Ponto flutuante de precisão dupla',
+    -- Tipos de texto
+    campo_char CHAR(10) COMMENT 'String de tamanho fixo (10 caracteres)',
+    campo_varchar VARCHAR(255) COMMENT 'String de tamanho variável (até 255 caracteres)',
+    campo_text TEXT COMMENT 'Texto longo (até 65535 caracteres)',
+    campo_mediumtext MEDIUMTEXT COMMENT 'Texto médio (até 16777215 caracteres)',
+    campo_longtext LONGTEXT COMMENT 'Texto muito longo (até 4294967295 caracteres)',
+    -- Tipos de data e hora
+    campo_date DATE COMMENT 'Data (YYYY-MM-DD)',
+    campo_time TIME COMMENT 'Hora (HH:MM:SS)',
+    campo_datetime DATETIME COMMENT 'Data e hora (YYYY-MM-DD HH:MM:SS)',
+    campo_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp (data e hora com timezone)',
+    campo_year YEAR COMMENT 'Ano (YYYY)',
+    -- Tipos binários
+    campo_binary BINARY(16) COMMENT 'Dados binários de tamanho fixo',
+    campo_varbinary VARBINARY(255) COMMENT 'Dados binários de tamanho variável',
+    campo_blob BLOB COMMENT 'Objeto binário grande (até 65535 bytes)',
+    campo_mediumblob MEDIUMBLOB COMMENT 'Blob médio (até 16777215 bytes)',
+    campo_longblob LONGBLOB COMMENT 'Blob longo (até 4294967295 bytes)',
+    -- Tipos especiais
+    campo_boolean BOOLEAN COMMENT 'Valor booleano (TRUE/FALSE)',
+    campo_bit BIT(8) COMMENT 'Valor de bit (até 64 bits)',
+    campo_enum ENUM('valor1', 'valor2', 'valor3') COMMENT 'Enumeração de valores predefinidos',
+    campo_set SET('opcao1', 'opcao2', 'opcao3') COMMENT 'Conjunto de valores (múltiplas escolhas)',
+    campo_json JSON COMMENT 'Dados em formato JSON',
+    -- Tipos geométricos (MySQL suporta tipos espaciais)
+    campo_geometry GEOMETRY COMMENT 'Dados geométricos genéricos',
+    campo_point POINT COMMENT 'Ponto geométrico (x, y)',
+    -- Campos de controle
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data e hora de criação do registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data e hora da última atualização'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela demonstrativa com todos os tipos de dados suportados pelo MySQL';

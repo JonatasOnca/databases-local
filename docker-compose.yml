@@ -15,7 +15,8 @@ services:
       - "3306:3306"
     volumes:
       # Mapeia o script de inicialização para o diretório de entrada do MySQL
-      - ./init/mysql/init_script.sql:/docker-entrypoint-initdb.d/init_script.sql
+      - ./init/mysql/init_script.sql:/docker-entrypoint-initdb.d/01_init_script.sql
+      - ./init/mysql/sample_data.sql:/docker-entrypoint-initdb.d/02_sample_data.sql
       - ./init/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -37,7 +38,8 @@ services:
       - "5432:5432"
     volumes:
       # Mapeia o script de inicialização para o diretório de entrada do PostgreSQL
-      - ./init/postgres/init_script.sql:/docker-entrypoint-initdb.d/init_script.sql
+      - ./init/postgres/init_script.sql:/docker-entrypoint-initdb.d/01_init_script.sql
+      - ./init/postgres/sample_data.sql:/docker-entrypoint-initdb.d/02_sample_data.sql
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -61,6 +63,7 @@ services:
       - "1433:1433"
     volumes:
       - ./init/sqlserver/init_script.sql:/usr/config/init_script.sql
+      - ./init/sqlserver/sample_data.sql:/usr/config/sample_data.sql
       - ./init/sqlserver/setup.sh:/usr/config/setup.sh
       - sqlserver_data:/var/opt/mssql
     healthcheck:
