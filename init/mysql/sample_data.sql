@@ -41,7 +41,9 @@ INSERT INTO logs (mensagem) VALUES
 
 -- Inserir dados na tabela generic_table (exemplo com tipos de dados MySQL)
 INSERT INTO generic_table (
-    campo_tinyint, campo_smallint, campo_mediumint, campo_int, campo_bigint,
+    campo_tinyint, campo_tinyint_unsigned, campo_smallint, campo_smallint_unsigned, 
+    campo_mediumint, campo_mediumint_unsigned, campo_int, campo_int_unsigned, 
+    campo_bigint, campo_bigint_unsigned,
     campo_decimal, campo_float, campo_double,
     campo_char, campo_varchar, campo_text, campo_mediumtext, campo_longtext,
     campo_date, campo_time, campo_datetime, campo_year,
@@ -49,9 +51,9 @@ INSERT INTO generic_table (
     campo_boolean, campo_bit,
     campo_enum, campo_set,
     campo_json,
-    campo_geometry, campo_point
+    campo_geometry, campo_point, campo_linestring, campo_polygon
 ) VALUES (
-    127, 32767, 8388607, 2147483647, 9223372036854775807,
+    127, 255, 32767, 65535, 8388607, 16777215, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615,
     99999999.99, 3.14159, 2.718281828459045,
     'CHAR_TEST', 'Este é um VARCHAR de exemplo', 'Este é um texto longo para demonstração do tipo TEXT',
     'Este é um texto médio para demonstração do tipo MEDIUMTEXT',
@@ -61,7 +63,8 @@ INSERT INTO generic_table (
     TRUE, b'10101010',
     'valor1', 'opcao1,opcao3',
     '{"nome": "Exemplo", "valor": 123, "ativo": true}',
-    ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))'), ST_GeomFromText('POINT(10 20)')
+    ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))'), ST_GeomFromText('POINT(10 20)'),
+    ST_GeomFromText('LINESTRING(0 0,1 1,2 2)'), ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))')
 );
 
 -- Reabilitar verificação de foreign keys

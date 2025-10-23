@@ -106,6 +106,8 @@ CREATE TABLE IF NOT EXISTS generic_table (
     campo_smallint SMALLINT,
     campo_integer INTEGER,
     campo_bigint BIGINT,
+    campo_serial SERIAL,
+    campo_bigserial BIGSERIAL,
     -- Tipos numéricos decimais
     campo_decimal DECIMAL(10,2),
     campo_numeric NUMERIC(15,5),
@@ -115,9 +117,11 @@ CREATE TABLE IF NOT EXISTS generic_table (
     campo_char CHAR(10),
     campo_varchar VARCHAR(255),
     campo_text TEXT,
+    campo_name NAME,
     -- Tipos de data e hora
     campo_date DATE,
     campo_time TIME,
+    campo_timetz TIMETZ,
     campo_timestamp TIMESTAMP,
     campo_timestamptz TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     campo_interval INTERVAL,
@@ -159,6 +163,14 @@ CREATE TABLE IF NOT EXISTS generic_table (
     campo_tsrange TSRANGE,
     campo_tstzrange TSTZRANGE,
     campo_daterange DATERANGE,
+    -- Tipos de full text search
+    campo_tsvector TSVECTOR,
+    campo_tsquery TSQUERY,
+    -- Tipos internos úteis
+    campo_oid OID,
+    campo_tid TID,
+    campo_xid XID,
+    campo_pg_lsn PG_LSN,
     -- Campos de controle
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

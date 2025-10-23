@@ -284,6 +284,7 @@ CREATE TABLE generic_table (
     campo_uniqueidentifier UNIQUEIDENTIFIER DEFAULT NEWID(),
     campo_xml XML,
     campo_sql_variant SQL_VARIANT,
+    campo_rowversion ROWVERSION,
     -- Tipos geográficos/espaciais
     campo_geometry GEOMETRY,
     campo_geography GEOGRAPHY,

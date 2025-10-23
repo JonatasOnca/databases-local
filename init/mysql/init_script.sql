@@ -59,10 +59,15 @@ CREATE TABLE IF NOT EXISTS generic_table (
     id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'Chave primária auto incremento',
     -- Tipos numéricos inteiros
     campo_tinyint TINYINT COMMENT 'Inteiro muito pequeno (-128 a 127)',
+    campo_tinyint_unsigned TINYINT UNSIGNED COMMENT 'Inteiro muito pequeno sem sinal (0 a 255)',
     campo_smallint SMALLINT COMMENT 'Inteiro pequeno (-32768 a 32767)',
+    campo_smallint_unsigned SMALLINT UNSIGNED COMMENT 'Inteiro pequeno sem sinal (0 a 65535)',
     campo_mediumint MEDIUMINT COMMENT 'Inteiro médio (-8388608 a 8388607)',
+    campo_mediumint_unsigned MEDIUMINT UNSIGNED COMMENT 'Inteiro médio sem sinal (0 a 16777215)',
     campo_int INT COMMENT 'Inteiro padrão (-2147483648 a 2147483647)',
+    campo_int_unsigned INT UNSIGNED COMMENT 'Inteiro sem sinal (0 a 4294967295)',
     campo_bigint BIGINT COMMENT 'Inteiro grande (-9223372036854775808 a 9223372036854775807)',
+    campo_bigint_unsigned BIGINT UNSIGNED COMMENT 'Inteiro grande sem sinal (0 a 18446744073709551615)',
     -- Tipos numéricos decimais
     campo_decimal DECIMAL(10,2) COMMENT 'Decimal fixo com precisão (10 dígitos, 2 decimais)',
     campo_float FLOAT COMMENT 'Ponto flutuante de precisão simples',
@@ -94,6 +99,12 @@ CREATE TABLE IF NOT EXISTS generic_table (
     -- Tipos geométricos (MySQL suporta tipos espaciais)
     campo_geometry GEOMETRY COMMENT 'Dados geométricos genéricos',
     campo_point POINT COMMENT 'Ponto geométrico (x, y)',
+    campo_linestring LINESTRING COMMENT 'Linha geométrica (sequência de pontos)',
+    campo_polygon POLYGON COMMENT 'Polígono geométrico',
+    campo_multipoint MULTIPOINT COMMENT 'Múltiplos pontos geométricos',
+    campo_multilinestring MULTILINESTRING COMMENT 'Múltiplas linhas geométricas',
+    campo_multipolygon MULTIPOLYGON COMMENT 'Múltiplos polígonos geométricos',
+    campo_geometrycollection GEOMETRYCOLLECTION COMMENT 'Coleção de geometrias',
     -- Campos de controle
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data e hora de criação do registro',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data e hora da última atualização'

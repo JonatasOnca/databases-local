@@ -36,8 +36,8 @@ INSERT INTO logs (mensagem) VALUES
 INSERT INTO generic_table (
     campo_smallint, campo_integer, campo_bigint,
     campo_decimal, campo_numeric, campo_real, campo_double_precision,
-    campo_char, campo_varchar, campo_text,
-    campo_date, campo_time, campo_timestamp, campo_interval,
+    campo_char, campo_varchar, campo_text, campo_name,
+    campo_date, campo_time, campo_timetz, campo_timestamp, campo_interval,
     campo_boolean,
     campo_bytea,
     campo_inet, campo_cidr, campo_macaddr, campo_macaddr8,
@@ -49,12 +49,13 @@ INSERT INTO generic_table (
     campo_money,
     campo_xml,
     campo_int4range, campo_int8range, campo_numrange, 
-    campo_tsrange, campo_tstzrange, campo_daterange
+    campo_tsrange, campo_tstzrange, campo_daterange,
+    campo_tsvector, campo_tsquery
 ) VALUES (
     32767, 2147483647, 9223372036854775807,
     99999999.99, 12345.67890, 3.14159, 2.718281828459045,
-    'CHAR_TEST', 'Este é um VARCHAR de exemplo', 'Este é um texto longo para demonstração do tipo TEXT',
-    '2024-01-15', '14:30:00', '2024-01-15 14:30:00', '1 year 2 months 3 days 4 hours 5 minutes 6 seconds',
+    'CHAR_TEST', 'Este é um VARCHAR de exemplo', 'Este é um texto longo para demonstração do tipo TEXT', 'exemplo_name',
+    '2024-01-15', '14:30:00', '14:30:00+00', '2024-01-15 14:30:00', '1 year 2 months 3 days 4 hours 5 minutes 6 seconds',
     TRUE,
     '\x48656c6c6f20576f726c6421',
     '192.168.1.1', '192.168.0.0/24', '08:00:2b:01:02:03', '08:00:2b:01:02:03:04:05',
@@ -68,5 +69,6 @@ INSERT INTO generic_table (
     '[1,10)', '[100,200)', '[0.5,10.5)',
     '[2024-01-01 10:00:00, 2024-01-01 18:00:00)', 
     '[2024-01-01 10:00:00+00, 2024-01-01 18:00:00+00)',
-    '[2024-01-01, 2024-01-31)'
+    '[2024-01-01, 2024-01-31)',
+    to_tsvector('exemplo de texto para busca'), to_tsquery('exemplo & texto')
 );
