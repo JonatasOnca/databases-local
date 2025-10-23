@@ -41,7 +41,7 @@ INSERT INTO generic_table (
     -- Tipos de texto
     campo_char, campo_varchar, campo_text, campo_name,
     -- Tipos de data e hora
-    campo_date, campo_time, campo_timetz, campo_timestamp, campo_interval,
+    campo_date, campo_time, campo_timetz, campo_timestamp, campo_timestamptz, campo_interval,
     -- Tipos booleanos
     campo_boolean,
     -- Tipos binários
@@ -75,7 +75,7 @@ INSERT INTO generic_table (
     -- Tipos de texto
     'CHAR_TEST', 'Este é um VARCHAR de exemplo', 'Este é um texto longo para demonstração do tipo TEXT', 'exemplo_name',
     -- Tipos de data e hora
-    '2024-01-15', '14:30:00', '14:30:00+00', '2024-01-15 14:30:00', '1 year 2 months 3 days 4 hours 5 minutes 6 seconds',
+    '2024-01-15', '14:30:00', '14:30:00+00', '2024-01-15 14:30:00', '2024-01-15 14:30:00+00', '1 year 2 months 3 days 4 hours 5 minutes 6 seconds',
     -- Tipos booleanos
     TRUE,
     -- Tipos binários

@@ -50,7 +50,7 @@ INSERT INTO generic_table (
     -- Tipos de texto
     campo_char, campo_varchar, campo_text, campo_mediumtext, campo_longtext,
     -- Tipos de data e hora
-    campo_date, campo_time, campo_datetime, campo_year,
+    campo_date, campo_time, campo_datetime, campo_timestamp, campo_year,
     -- Tipos binários
     campo_binary, campo_varbinary, campo_blob, campo_mediumblob, campo_longblob,
     -- Tipos especiais
@@ -70,7 +70,7 @@ INSERT INTO generic_table (
     'Este é um texto médio para demonstração do tipo MEDIUMTEXT',
     'Este é um texto muito longo para demonstração do tipo LONGTEXT com mais conteúdo para atingir o tamanho necessário',
     -- Tipos de data e hora
-    '2024-01-15', '14:30:00', '2024-01-15 14:30:00', 2024,
+    '2024-01-15', '14:30:00', '2024-01-15 14:30:00', '2024-01-15 14:30:00', 2024,
     -- Tipos binários
     UNHEX('48656C6C6F20576F726C64210000'), UNHEX('48656C6C6F'), UNHEX('48656C6C6F20576F726C6421'),
     UNHEX('48656C6C6F20576F726C6421'), UNHEX('48656C6C6F20576F726C6421'),
