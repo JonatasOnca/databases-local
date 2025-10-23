@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Sistema de Gerenciamento Automático de Dados - Teste SQL Server
-===============================================================
+Sistema de Gerenciamento Automático de Dados - Multi Banco
+===========================================================
 
-Teste específico para SQL Server usando pymssql
+Sistema que suporta MySQL, PostgreSQL e SQL Server
+Inclui tabela generic com operações automáticas a cada 30 segundos
 """
 
 import time
@@ -43,7 +44,11 @@ class DatabaseConfig:
         'user': 'devuser', 
         'password': 'DevP@ssw0rd!',
         'database': 'testdb',
-        'charset': 'utf8mb4'
+        'charset': 'utf8mb4',
+        'autocommit': True,
+        'connect_timeout': 10,
+        'read_timeout': 10,
+        'write_timeout': 10
     }
     
     POSTGRES = {
@@ -85,12 +90,52 @@ class DataManager:
             'Operação automática executada', 'Dados atualizados pelo sistema',
             'Sincronização de dados realizada', 'Sistema operando normalmente'
         ]
+        
+        # Dados para tabela generic
+        self.sample_generic_types = [
+            'config', 'settings', 'metadata', 'cache', 'session', 'temp'
+        ]
+        
+        self.sample_generic_keys = [
+            'user_preference', 'system_setting', 'app_config', 'session_data',
+            'cache_entry', 'temp_storage', 'metadata_info', 'sync_status'
+        ]
+        
+        self.sample_generic_values = [
+            'enabled', 'disabled', 'active', 'inactive', 'pending', 'completed',
+            'processing', 'error', 'success', 'waiting', 'approved', 'rejected'
+        ]
+        
+        # Controle de timer para operações a cada 30 segundos
+        self.last_generic_operation = time.time()
     
     def connect(self) -> bool:
         """Estabelece conexão com o banco de dados"""
         try:
             if self.database_type == 'mysql':
-                self.connection = pymysql.connect(**DatabaseConfig.MYSQL)
+                # Tentar conexão MySQL com configurações melhoradas
+                mysql_config = DatabaseConfig.MYSQL.copy()
+                
+                # Tentar diferentes configurações de autenticação
+                try:
+                    self.connection = pymysql.connect(**mysql_config)
+                except Exception as e1:
+                    logging.warning(f"⚠️ Primeira tentativa de conexão MySQL falhou: {e1}")
+                    
+                    # Tentar com auth_plugin_map para compatibilidade
+                    try:
+                        mysql_config['auth_plugin_map'] = {
+                            'caching_sha2_password': 'mysql_native_password'
+                        }
+                        self.connection = pymysql.connect(**mysql_config)
+                    except Exception as e2:
+                        logging.warning(f"⚠️ Segunda tentativa de conexão MySQL falhou: {e2}")
+                        
+                        # Tentar sem SSL
+                        mysql_config.pop('auth_plugin_map', None)
+                        mysql_config['ssl_disabled'] = True
+                        self.connection = pymysql.connect(**mysql_config)
+                        
             elif self.database_type == 'postgres':
                 self.connection = psycopg2.connect(**DatabaseConfig.POSTGRES)
             elif self.database_type == 'sqlserver':
@@ -181,7 +226,7 @@ class DataManager:
             cursor = self.connection.cursor()
             
             if self.database_type == 'sqlserver':
-                # Verificar se as tabelas existem
+                # SQL Server - Verificar se as tabelas existem
                 cursor.execute("""
                     IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='clientes' AND xtype='U')
                     CREATE TABLE clientes (
@@ -215,8 +260,115 @@ class DataManager:
                     )
                 """)
                 
+                cursor.execute("""
+                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='generic' AND xtype='U')
+                    CREATE TABLE generic (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        tipo NVARCHAR(50) NOT NULL,
+                        chave NVARCHAR(100) NOT NULL,
+                        valor NVARCHAR(MAX),
+                        metadata NVARCHAR(MAX),
+                        created_at DATETIME2 DEFAULT GETDATE(),
+                        updated_at DATETIME2 DEFAULT GETDATE()
+                    )
+                """)
+                
                 self.connection.commit()
-                logging.info("✅ Tabelas verificadas/criadas no SQL Server")
+                logging.info("✅ Tabelas verificadas/criadas no SQL Server (incluindo tabela generic)")
+                
+            elif self.database_type == 'mysql':
+                # MySQL - Criar tabelas se não existirem
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS clientes (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        nome VARCHAR(100) NOT NULL,
+                        email VARCHAR(100),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS produtos (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        nome VARCHAR(100) NOT NULL,
+                        preco DECIMAL(10,2) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS logs (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        mensagem VARCHAR(255),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS generic (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        tipo VARCHAR(50) NOT NULL,
+                        chave VARCHAR(100) NOT NULL,
+                        valor TEXT,
+                        metadata TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                
+                self.connection.commit()
+                logging.info("✅ Tabelas verificadas/criadas no MySQL (incluindo tabela generic)")
+                
+            elif self.database_type == 'postgres':
+                # PostgreSQL - Criar tabelas se não existirem
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS clientes (
+                        id SERIAL PRIMARY KEY,
+                        nome VARCHAR(100) NOT NULL,
+                        email VARCHAR(100),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS produtos (
+                        id SERIAL PRIMARY KEY,
+                        nome VARCHAR(100) NOT NULL,
+                        preco DECIMAL(10,2) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS logs (
+                        id SERIAL PRIMARY KEY,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        mensagem VARCHAR(255),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS generic (
+                        id SERIAL PRIMARY KEY,
+                        tipo VARCHAR(50) NOT NULL,
+                        chave VARCHAR(100) NOT NULL,
+                        valor TEXT,
+                        metadata TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                self.connection.commit()
+                logging.info("✅ Tabelas verificadas/criadas no PostgreSQL (incluindo tabela generic)")
             
             cursor.close()
             return True
@@ -298,18 +450,96 @@ class DataManager:
             return True
         return False
     
+    def insert_generic(self) -> bool:
+        """Insere um novo registro na tabela generic"""
+        tipo = random.choice(self.sample_generic_types)
+        chave = random.choice(self.sample_generic_keys)
+        valor = random.choice(self.sample_generic_values)
+        
+        # Gerar metadata JSON-like
+        metadata = f'{{"timestamp": "{datetime.datetime.now().isoformat()}", "source": "auto-system", "version": "{random.randint(1, 10)}.{random.randint(0, 9)}"}}'
+        
+        query = "INSERT INTO generic (tipo, chave, valor, metadata) VALUES (%s, %s, %s, %s)"
+        result = self.execute_query(query, (tipo, chave, valor, metadata))
+        
+        if result['success']:
+            logging.info(f"🔧 Generic inserido: {tipo} -> {chave} = {valor}")
+            return True
+        return False
+    
+    def update_generic(self) -> bool:
+        """Atualiza um registro existente na tabela generic"""
+        generic_id = self.get_random_existing_id('generic')
+        if not generic_id:
+            return False
+        
+        novo_valor = random.choice(self.sample_generic_values)
+        novo_metadata = f'{{"timestamp": "{datetime.datetime.now().isoformat()}", "source": "auto-update", "operation": "scheduled_update"}}'
+        
+        if self.database_type == 'sqlserver':
+            query = "UPDATE generic SET valor = %s, metadata = %s, updated_at = GETDATE() WHERE id = %s"
+        elif self.database_type == 'mysql':
+            query = "UPDATE generic SET valor = %s, metadata = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s"
+        elif self.database_type == 'postgres':
+            query = "UPDATE generic SET valor = %s, metadata = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s"
+        
+        result = self.execute_query(query, (novo_valor, novo_metadata, generic_id))
+        
+        if result['success'] and result['rowcount'] > 0:
+            logging.info(f"🔧 Generic atualizado: ID {generic_id} -> {novo_valor}")
+            return True
+        return False
+    
+    def should_execute_generic_operations(self) -> bool:
+        """Verifica se deve executar operações na tabela generic (a cada 30 segundos)"""
+        current_time = time.time()
+        if current_time - self.last_generic_operation >= 30:
+            self.last_generic_operation = current_time
+            return True
+        return False
+    
+    def execute_generic_operations_cycle(self):
+        """Executa operações específicas na tabela generic"""
+        logging.info("⏰ Executando ciclo especial da tabela GENERIC (30s)")
+        
+        operations = [
+            ('INSERT Generic', self.insert_generic),
+            ('UPDATE Generic', self.update_generic)
+        ]
+        
+        # Executar 1-2 operações na tabela generic
+        num_operations = random.randint(1, 2)
+        selected_operations = random.sample(operations, num_operations)
+        
+        success_count = 0
+        for operation_name, operation_func in selected_operations:
+            try:
+                if operation_func():
+                    success_count += 1
+                time.sleep(0.5)  # Pequena pausa entre operações
+            except Exception as e:
+                logging.error(f"❌ Erro na operação {operation_name}: {e}")
+        
+        logging.info(f"🔧 Ciclo GENERIC concluído: {success_count}/{len(selected_operations)} operações executadas")
+    
     def execute_operations_cycle(self):
         """Executa um ciclo completo de operações"""
+        # Verificar se deve executar operações da tabela generic (a cada 30 segundos)
+        if self.should_execute_generic_operations():
+            self.execute_generic_operations_cycle()
+        
         operations = [
             ('INSERT Cliente', self.insert_cliente),
             ('UPDATE Cliente', self.update_cliente),
             ('INSERT Produto', self.insert_produto),
             ('UPDATE Produto', self.update_produto),
-            ('INSERT Log', self.insert_log)
+            ('INSERT Log', self.insert_log),
+            ('INSERT Generic', self.insert_generic),
+            ('UPDATE Generic', self.update_generic)
         ]
         
-        # Executar 2-3 operações aleatórias por ciclo
-        num_operations = random.randint(2, 3)
+        # Executar 2-4 operações aleatórias por ciclo (incluindo generic ocasionalmente)
+        num_operations = random.randint(2, 4)
         selected_operations = random.sample(operations, num_operations)
         
         success_count = 0
@@ -328,10 +558,10 @@ class DataManager:
         logging.info(f"🚀 Iniciando demonstração do gerenciamento automático ({self.database_type.upper()})")
         logging.info(f"⏰ Duração: {duration_seconds} segundos")
         
-        if self.database_type == 'sqlserver':
-            if not self.check_tables_exist():
-                logging.error("❌ Falha ao verificar/criar tabelas")
-                return
+        # Verificar/criar tabelas para todos os bancos
+        if not self.check_tables_exist():
+            logging.error("❌ Falha ao verificar/criar tabelas")
+            return
         
         start_time = time.time()
         cycles = 0
@@ -365,12 +595,15 @@ def main():
         sys.exit(1)
     
     print(f"""
-🗄️  Sistema de Gerenciamento Automático - TESTE SQL SERVER
+🗄️  Sistema de Gerenciamento Automático - MULTI BANCO
 =========================================================
 🎯 Banco: {database_type.upper()}
 ⏰ Duração: {duration} segundos
 📊 Operações: INSERT e UPDATE automáticos
-🔧 Driver: pymssql (alternativa ao pyodbc)
+🔧 Drivers: pymysql, psycopg2, pymssql
+📋 Tabelas: clientes, produtos, logs, generic
+⏰ Generic: Operações automáticas a cada 30 segundos
+💾 Suporte: MySQL, PostgreSQL, SQL Server
 =========================================================
     """)
     
