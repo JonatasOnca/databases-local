@@ -1,6 +1,16 @@
 # 🗄️ Local Database Environment
 
-Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de banco de dados (MySQL, PostgreSQL e SQL Server) usando Docker Compose. Agora com **setup inteligente**, **health check avançado**, **backup automatizado**, **testes automatizados** e **sistema de métricas**.
+Um ambiente de desenvolvimento local com múltiplos sistemas de gerenciamento de banco de dados (MySQL, PostgreSQL e SQL Server) usando Docker Compose. Agora com **setup inteligente**, **health check avançado**, **backup automatizado**, **testes automatizados**, **sistema de métricas** e **gerenciamento automático de dados**.
+
+## ✨ Principais Funcionalidades
+
+- 🚀 **Setup inteligente** com detecção automática de arquitetura
+- 🤖 **Sistema automático de carga de dados** (INSERT/UPDATE a cada 30 segundos)
+- 📊 **Monitoramento em tempo real** com métricas detalhadas  
+- 🔄 **Backup automatizado** com verificação de integridade
+- 🧪 **Suite de testes automatizados** para validação completa
+- 🔧 **Migração de dados** entre diferentes bancos
+- 🐍 **Ambiente Python integrado** com dependências gerenciadas
 
 ## 🚀 Início Rápido
 
@@ -118,6 +128,124 @@ make up
 | `make list-python-deps` | Lista dependências instaladas |
 | `make clean-python-env` | Remove ambiente virtual |
 | `make recreate-python-env` | Recria ambiente virtual do zero |
+
+### 🤖 Gerenciamento Automático de Dados
+
+Sistema que executa operações INSERT e UPDATE automaticamente a cada **30 segundos** nos bancos de dados.
+
+| Comando | Descrição |
+|---------|-----------|
+| `make start-auto-data` | **🚀 Inicialização interativa (RECOMENDADO)** |
+| `make auto-data-mysql` | Gerenciador automático para MySQL |
+| `make auto-data-postgres` | Gerenciador automático para PostgreSQL |
+| `make auto-data-sqlserver` | Gerenciador automático para SQL Server |
+| `make auto-data-all` | Gerenciador automático para TODOS os bancos em paralelo |
+| `make stop-auto-data` | Para todos os gerenciadores |
+| `make status-auto-data` | Status dos gerenciadores |
+| `make logs-auto-data` | Logs em tempo real |
+| `make clean-auto-logs` | Limpa logs dos gerenciadores |
+
+### 🎬 Demonstrações do Sistema Automático
+
+| Comando | Descrição |
+|---------|-----------|
+| `make demo-quick` | ⚡ Demonstração rápida MySQL (15s) |
+| `make demo-auto-data` | 🎬 Demonstração MySQL (30s) |
+| `make demo-auto-data-postgres` | 🎬 Demonstração PostgreSQL (30s) |
+| `make demo-auto-data-sqlserver` | 🎬 Demonstração SQL Server (20s) |
+| `make demo-all-databases` | 🎯 Teste completo de todos os bancos |
+
+## 🤖 Sistema de Gerenciamento Automático de Dados
+
+O projeto inclui um sistema avançado que **automatiza a carga de dados nos bancos a cada 30 segundos**, simulando uma aplicação real em produção.
+
+### 🚀 Como Usar
+
+**Opção 1: Inicialização Interativa (Recomendada)**
+```bash
+make start-auto-data
+```
+Abre um menu onde você pode escolher executar para um banco específico ou todos simultaneamente.
+
+**Opção 2: Comandos Diretos**
+```bash
+# Apenas um banco
+make auto-data-mysql      # MySQL
+make auto-data-postgres   # PostgreSQL  
+make auto-data-sqlserver  # SQL Server
+
+# Todos os bancos em paralelo
+make auto-data-all
+```
+
+### ⚙️ O que o Sistema Faz
+
+**Operações Regulares (a cada ciclo):**
+- ➕ INSERT de novos clientes com emails únicos
+- 🔄 UPDATE de clientes existentes
+- ➕ INSERT de produtos com preços variáveis
+- 🔄 UPDATE de preços de produtos (+/- 15%)
+- 📝 INSERT de logs do sistema
+- 🔧 Operações ocasionais na tabela `generic`
+
+**Operações Especiais da Tabela Generic (exatamente a cada 30 segundos):**
+- 🔧 INSERT/UPDATE específicos com metadata JSON
+- ⏰ Timestamps automáticos de sincronização
+- 📊 Dados de configuração e cache simulados
+
+### 📊 Dados Gerados
+
+O sistema utiliza dados realistas:
+
+**Clientes:** Ana Costa, Bruno Lima, Carlos Pereira, Diana Silva, etc.
+**Produtos:** Smartphone Samsung, iPhone 15, Tablet iPad, Notebook Gamer, etc.
+**Tabela Generic:** config, settings, metadata, cache, session, temp
+
+### 🔍 Monitoramento
+
+```bash
+# Verificar status dos gerenciadores
+make status-auto-data
+
+# Ver logs em tempo real  
+make logs-auto-data
+
+# Parar todos os gerenciadores
+make stop-auto-data
+```
+
+### 📁 Logs Automáticos
+
+Os logs são salvos automaticamente em:
+- `logs/auto-mysql.log`
+- `logs/auto-postgres.log`
+- `logs/auto-sqlserver.log`
+
+### 🎬 Testes e Demonstrações
+
+Antes de usar em produção, teste com as demonstrações:
+
+```bash
+# Teste rápido (15 segundos)
+make demo-quick
+
+# Teste específico por banco
+make demo-auto-data          # MySQL (30s)
+make demo-auto-data-postgres # PostgreSQL (30s)  
+make demo-auto-data-sqlserver # SQL Server (20s)
+
+# Teste completo de todos os bancos
+make demo-all-databases
+```
+
+### 💡 Casos de Uso
+
+Este sistema é ideal para:
+- 🧪 **Testes de Performance** - Carga contínua de dados
+- 📊 **Simulação de Produção** - Ambiente realista de desenvolvimento  
+- 🔍 **Testes de Monitoramento** - Validar alertas e dashboards
+- 🚀 **Demonstrações** - Mostrar sistemas funcionando com dados dinâmicos
+- 📈 **Análise de Crescimento** - Testar como o sistema escala com dados
 
 ## 🔌 Portas e Conexões
 
@@ -262,6 +390,34 @@ make up
 - Os dados são persistidos em volumes Docker
 - Scripts de inicialização são executados apenas na primeira vez
 - Para reinicializar os bancos, use `make clean && make up`
+- O sistema automático de dados roda independentemente e pode ser usado para testes de carga
+- Logs do sistema automático são mantidos em `logs/auto-*.log`
+
+## ❓ FAQ - Sistema Automático
+
+**P: Como parar o sistema automático se ele estiver rodando em background?**
+```bash
+make stop-auto-data
+```
+
+**P: O sistema automático interfere com minhas operações manuais?**
+R: Não, o sistema usa transações pequenas e não bloqueia operações normais.
+
+**P: Posso ajustar o intervalo de 30 segundos?**
+R: Sim, edite o arquivo `scripts/auto-data-manager.py` e modifique a variável de tempo.
+
+**P: Como ver apenas os logs de um banco específico?**
+```bash
+tail -f logs/auto-mysql.log      # MySQL
+tail -f logs/auto-postgres.log   # PostgreSQL  
+tail -f logs/auto-sqlserver.log  # SQL Server
+```
+
+**P: O sistema automático funciona com containers parados?**
+R: Não, os containers devem estar rodando. Use `make up` ou `make up-native` primeiro.
+
+**P: Posso usar o sistema em produção?**
+R: O sistema é projetado para desenvolvimento e testes. Para produção, ajuste as configurações conforme necessário.
 
 ## 🤝 Contribuindo
 
