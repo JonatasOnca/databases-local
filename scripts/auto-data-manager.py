@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 """
-Sistema de Gerenciamento Automático de Dados
-============================================
+Sistema de Gerenciamento Automático de Dados - Multi Banco
+===========================================================
 
-Este script executa operações automáticas de INSERT e UPDATE nas tabelas do banco de dados
-a cada 30 segundos. Suporta MySQL, PostgreSQL e SQL Server.
-
-Autor: Sistema Automático
-Data: 2025-10-21
+Sistema que suporta MySQL, PostgreSQL e SQL Server
+Inclui tabela generic com operações automáticas a cada 30 segundos
 """
 
 import time
@@ -15,12 +12,9 @@ import random
 import datetime
 import logging
 from typing import Dict, List, Any
-import os
 import sys
-import signal
-import threading
 
-# Dependências necessárias (instalar com: pip install pymysql psycopg2-binary pymssql)
+# Dependências necessárias
 try:
     import pymysql
     import psycopg2
@@ -36,7 +30,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('/Users/jonatasonca/Desktop/TecOnca/Projetos/databases-local/logs/auto-data-manager.log'),
+        logging.FileHandler('/Users/jonatasonca/Desktop/TecOnca/Projetos/databases-local/logs/auto-data-sqlserver-test.log'),
         logging.StreamHandler()
     ]
 )
@@ -47,10 +41,14 @@ class DatabaseConfig:
     MYSQL = {
         'host': 'localhost',
         'port': 3306,
-        'user': 'devuser',
+        'user': 'devuser', 
         'password': 'DevP@ssw0rd!',
         'database': 'testdb',
-        'charset': 'utf8mb4'
+        'charset': 'utf8mb4',
+        'autocommit': True,
+        'connect_timeout': 10,
+        'read_timeout': 10,
+        'write_timeout': 10
     }
     
     POSTGRES = {
@@ -66,7 +64,7 @@ class DatabaseConfig:
         'port': 1433,
         'user': 'SA',
         'password': 'SuperSecureP@ssword!',
-        'database': 'testdb'
+        'database': 'testdb'  # Iniciar com master depois trocar
     }
 
 class DataManager:
@@ -75,41 +73,73 @@ class DataManager:
     def __init__(self, database_type: str = 'mysql'):
         self.database_type = database_type
         self.connection = None
-        self.running = False
-        self.thread = None
         
         # Dados para simulação
         self.sample_names = [
             'Ana Costa', 'Bruno Lima', 'Carlos Pereira', 'Diana Silva', 'Eduardo Santos',
             'Fernanda Oliveira', 'Gabriel Ferreira', 'Helena Rodrigues', 'Igor Almeida',
-            'Juliana Nascimento', 'Kevin Barbosa', 'Larissa Cardoso', 'Marcos Vieira',
-            'Natália Sousa', 'Otávio Ribeiro', 'Paula Gonçalves', 'Quirino Martins',
-            'Raquel Campos', 'Sandro Araújo', 'Tatiane Moreira'
+            'Juliana Nascimento'
         ]
         
         self.sample_products = [
             ('Smartphone Samsung', 1200.00), ('iPhone 15', 5000.00), ('Tablet iPad', 3000.00),
-            ('Notebook Gamer', 4500.00), ('Headset Bluetooth', 250.00), ('Smartwatch', 800.00),
-            ('Camera Digital', 1800.00), ('Console PS5', 3500.00), ('Drone DJI', 2200.00),
-            ('Home Theater', 1500.00), ('Roteador WiFi 6', 400.00), ('SSD 1TB', 600.00),
-            ('Placa de Vídeo', 2800.00), ('Processador Intel', 1600.00), ('Memória RAM 32GB', 900.00)
+            ('Notebook Gamer', 4500.00), ('Headset Bluetooth', 250.00), ('Smartwatch', 800.00)
         ]
         
         self.sample_messages = [
             'Operação automática executada', 'Dados atualizados pelo sistema',
-            'Sincronização de dados realizada', 'Manutenção automática executada',
-            'Sistema operando normalmente', 'Dados inseridos automaticamente',
-            'Atualização de registros concluída', 'Processo automático executado'
+            'Sincronização de dados realizada', 'Sistema operando normalmente'
         ]
+        
+        # Dados para tabela generic
+        self.sample_generic_types = [
+            'config', 'settings', 'metadata', 'cache', 'session', 'temp'
+        ]
+        
+        self.sample_generic_keys = [
+            'user_preference', 'system_setting', 'app_config', 'session_data',
+            'cache_entry', 'temp_storage', 'metadata_info', 'sync_status'
+        ]
+        
+        self.sample_generic_values = [
+            'enabled', 'disabled', 'active', 'inactive', 'pending', 'completed',
+            'processing', 'error', 'success', 'waiting', 'approved', 'rejected'
+        ]
+        
+        # Controle de timer para operações a cada 30 segundos
+        self.last_generic_operation = time.time()
     
     def connect(self) -> bool:
         """Estabelece conexão com o banco de dados"""
         try:
             if self.database_type == 'mysql':
-                self.connection = pymysql.connect(**DatabaseConfig.MYSQL)
+                # Tentar conexão MySQL com configurações melhoradas
+                mysql_config = DatabaseConfig.MYSQL.copy()
+                
+                # Tentar diferentes configurações de autenticação
+                try:
+                    self.connection = pymysql.connect(**mysql_config)
+                except Exception as e1:
+                    logging.warning(f"⚠️ Primeira tentativa de conexão MySQL falhou: {e1}")
+                    
+                    # Tentar com auth_plugin_map para compatibilidade
+                    try:
+                        mysql_config['auth_plugin_map'] = {
+                            'caching_sha2_password': 'mysql_native_password'
+                        }
+                        self.connection = pymysql.connect(**mysql_config)
+                    except Exception as e2:
+                        logging.warning(f"⚠️ Segunda tentativa de conexão MySQL falhou: {e2}")
+                        
+                        # Tentar sem SSL
+                        mysql_config.pop('auth_plugin_map', None)
+                        mysql_config['ssl_disabled'] = True
+                        self.connection = pymysql.connect(**mysql_config)
+                        
             elif self.database_type == 'postgres':
                 self.connection = psycopg2.connect(**DatabaseConfig.POSTGRES)
             elif self.database_type == 'sqlserver':
+                # Conectar usando pymssql
                 self.connection = pymssql.connect(
                     server=DatabaseConfig.SQLSERVER['server'],
                     port=DatabaseConfig.SQLSERVER['port'],
@@ -117,6 +147,18 @@ class DataManager:
                     password=DatabaseConfig.SQLSERVER['password'],
                     database=DatabaseConfig.SQLSERVER['database']
                 )
+                
+                # Criar/usar database testdb
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute("IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'testdb') CREATE DATABASE testdb")
+                    self.connection.commit()
+                    cursor.execute("USE testdb")
+                    self.connection.commit()
+                    logging.info("✅ Database testdb preparado")
+                except Exception as e:
+                    logging.warning(f"⚠️ Aviso ao preparar database: {e}")
+                cursor.close()
             
             logging.info(f"✅ Conectado ao {self.database_type.upper()}")
             return True
@@ -135,17 +177,16 @@ class DataManager:
         """Executa uma query no banco de dados"""
         try:
             cursor = self.connection.cursor()
-            cursor.execute(query, params or ())
+            
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
             
             result = {
                 'success': True,
-                'rowcount': cursor.rowcount,
-                'lastrowid': None
+                'rowcount': cursor.rowcount if hasattr(cursor, 'rowcount') else 0
             }
-            
-            # Para MySQL, capturar o último ID inserido
-            if self.database_type == 'mysql' and 'INSERT' in query.upper():
-                result['lastrowid'] = cursor.lastrowid
             
             self.connection.commit()
             cursor.close()
@@ -154,34 +195,198 @@ class DataManager:
             
         except Exception as e:
             logging.error(f"❌ Erro ao executar query: {e}")
-            self.connection.rollback()
+            try:
+                self.connection.rollback()
+            except:
+                pass
             return {'success': False, 'error': str(e)}
     
     def get_random_existing_id(self, table: str, id_column: str = 'id') -> int:
         """Obtém um ID aleatório existente de uma tabela"""
         try:
             cursor = self.connection.cursor()
-            if self.database_type == 'postgres':
-                query = f"SELECT {id_column} FROM {table} ORDER BY RANDOM() LIMIT 1"
-            elif self.database_type == 'sqlserver':
-                query = f"SELECT TOP 1 {id_column} FROM {table} ORDER BY NEWID()"
-            else:  # mysql
-                query = f"SELECT {id_column} FROM {table} ORDER BY RAND() LIMIT 1"
             
-            cursor.execute(query)
+            if self.database_type == 'postgres':
+                cursor.execute(f"SELECT {id_column} FROM {table} ORDER BY RANDOM() LIMIT 1")
+            elif self.database_type == 'sqlserver':
+                cursor.execute(f"SELECT TOP 1 {id_column} FROM {table} ORDER BY NEWID()")
+            else:  # MySQL
+                cursor.execute(f"SELECT {id_column} FROM {table} ORDER BY RAND() LIMIT 1")
+                
             result = cursor.fetchone()
             cursor.close()
             return result[0] if result else None
         except Exception as e:
-            logging.error(f"❌ Erro ao obter ID aleatório da tabela {table}: {e}")
+            logging.error(f"❌ Erro ao buscar ID aleatório: {e}")
             return None
+    
+    def check_tables_exist(self) -> bool:
+        """Verifica se as tabelas existem e as cria se necessário"""
+        try:
+            cursor = self.connection.cursor()
+            
+            if self.database_type == 'sqlserver':
+                # SQL Server - Verificar se as tabelas existem
+                cursor.execute("""
+                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='clientes' AND xtype='U')
+                    CREATE TABLE clientes (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        nome NVARCHAR(100) NOT NULL,
+                        email NVARCHAR(100),
+                        created_at DATETIME2 DEFAULT GETDATE(),
+                        updated_at DATETIME2 DEFAULT GETDATE()
+                    )
+                """)
+                
+                cursor.execute("""
+                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='produtos' AND xtype='U')
+                    CREATE TABLE produtos (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        nome NVARCHAR(100) NOT NULL,
+                        preco DECIMAL(10,2) NOT NULL,
+                        created_at DATETIME2 DEFAULT GETDATE(),
+                        updated_at DATETIME2 DEFAULT GETDATE()
+                    )
+                """)
+                
+                cursor.execute("""
+                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='logs' AND xtype='U')
+                    CREATE TABLE logs (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        timestamp DATETIME2 DEFAULT GETDATE(),
+                        mensagem NVARCHAR(255),
+                        created_at DATETIME2 DEFAULT GETDATE(),
+                        updated_at DATETIME2 DEFAULT GETDATE()
+                    )
+                """)
+                
+                cursor.execute("""
+                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='generic' AND xtype='U')
+                    CREATE TABLE generic (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        tipo NVARCHAR(50) NOT NULL,
+                        chave NVARCHAR(100) NOT NULL,
+                        valor NVARCHAR(MAX),
+                        metadata NVARCHAR(MAX),
+                        created_at DATETIME2 DEFAULT GETDATE(),
+                        updated_at DATETIME2 DEFAULT GETDATE()
+                    )
+                """)
+                
+                self.connection.commit()
+                logging.info("✅ Tabelas verificadas/criadas no SQL Server (incluindo tabela generic)")
+                
+            elif self.database_type == 'mysql':
+                # MySQL - Criar tabelas se não existirem
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS clientes (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        nome VARCHAR(100) NOT NULL,
+                        email VARCHAR(100),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS produtos (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        nome VARCHAR(100) NOT NULL,
+                        preco DECIMAL(10,2) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS logs (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        mensagem VARCHAR(255),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS generic (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        tipo VARCHAR(50) NOT NULL,
+                        chave VARCHAR(100) NOT NULL,
+                        valor TEXT,
+                        metadata TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                
+                self.connection.commit()
+                logging.info("✅ Tabelas verificadas/criadas no MySQL (incluindo tabela generic)")
+                
+            elif self.database_type == 'postgres':
+                # PostgreSQL - Criar tabelas se não existirem
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS clientes (
+                        id SERIAL PRIMARY KEY,
+                        nome VARCHAR(100) NOT NULL,
+                        email VARCHAR(100),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS produtos (
+                        id SERIAL PRIMARY KEY,
+                        nome VARCHAR(100) NOT NULL,
+                        preco DECIMAL(10,2) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS logs (
+                        id SERIAL PRIMARY KEY,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        mensagem VARCHAR(255),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS generic (
+                        id SERIAL PRIMARY KEY,
+                        tipo VARCHAR(50) NOT NULL,
+                        chave VARCHAR(100) NOT NULL,
+                        valor TEXT,
+                        metadata TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                self.connection.commit()
+                logging.info("✅ Tabelas verificadas/criadas no PostgreSQL (incluindo tabela generic)")
+            
+            cursor.close()
+            return True
+            
+        except Exception as e:
+            logging.error(f"❌ Erro ao verificar/criar tabelas: {e}")
+            return False
     
     def insert_cliente(self) -> bool:
         """Insere um novo cliente"""
         nome = random.choice(self.sample_names)
         email = f"{nome.lower().replace(' ', '.')}_{random.randint(1000, 9999)}@email.com"
         
-        query = "INSERT INTO clientes (nome, email) VALUES (%s, %s)"
+        if self.database_type == 'sqlserver':
+            query = "INSERT INTO clientes (nome, email) VALUES (%s, %s)"
+        else:
+            query = "INSERT INTO clientes (nome, email) VALUES (%s, %s)"
+        
         result = self.execute_query(query, (nome, email))
         
         if result['success']:
@@ -208,7 +413,6 @@ class DataManager:
     def insert_produto(self) -> bool:
         """Insere um novo produto"""
         nome, preco_base = random.choice(self.sample_products)
-        # Adiciona variação no preço
         preco = round(preco_base * random.uniform(0.8, 1.2), 2)
         
         query = "INSERT INTO produtos (nome, preco) VALUES (%s, %s)"
@@ -225,83 +429,12 @@ class DataManager:
         if not produto_id:
             return False
         
-        # Atualiza o preço com uma variação de -10% a +15%
         variacao = random.uniform(0.9, 1.15)
-        
-        # Para diferentes bancos, a sintaxe pode variar
-        if self.database_type == 'mysql':
-            query = "UPDATE produtos SET preco = preco * %s WHERE id = %s"
-        else:
-            query = "UPDATE produtos SET preco = preco * %s WHERE id = %s"
-        
+        query = "UPDATE produtos SET preco = preco * %s WHERE id = %s"
         result = self.execute_query(query, (variacao, produto_id))
         
         if result['success'] and result['rowcount'] > 0:
             logging.info(f"🔄 Produto atualizado: ID {produto_id} (preço ajustado em {(variacao-1)*100:.1f}%)")
-            return True
-        return False
-    
-    def insert_pedido(self) -> bool:
-        """Insere um novo pedido"""
-        cliente_id = self.get_random_existing_id('clientes')
-        if not cliente_id:
-            return False
-        
-        data_pedido = datetime.date.today() - datetime.timedelta(days=random.randint(0, 30))
-        
-        query = "INSERT INTO pedidos (cliente_id, data_pedido) VALUES (%s, %s)"
-        result = self.execute_query(query, (cliente_id, data_pedido))
-        
-        if result['success']:
-            pedido_id = result.get('lastrowid')
-            logging.info(f"➕ Pedido inserido: ID {pedido_id}, Cliente {cliente_id}")
-            
-            # Inserir itens do pedido
-            self.insert_itens_pedido(pedido_id or self.get_random_existing_id('pedidos'))
-            return True
-        return False
-    
-    def insert_itens_pedido(self, pedido_id: int) -> bool:
-        """Insere itens para um pedido"""
-        if not pedido_id:
-            return False
-        
-        # Inserir 1-3 itens aleatórios
-        num_itens = random.randint(1, 3)
-        
-        for _ in range(num_itens):
-            produto_id = self.get_random_existing_id('produtos')
-            if produto_id:
-                quantidade = random.randint(1, 5)
-                
-                # Verificar se o item já existe (evitar duplicatas na chave primária composta)
-                cursor = self.connection.cursor()
-                cursor.execute("SELECT 1 FROM itens_pedido WHERE pedido_id = %s AND produto_id = %s", (pedido_id, produto_id))
-                exists = cursor.fetchone()
-                cursor.close()
-                
-                if not exists:
-                    query = "INSERT INTO itens_pedido (pedido_id, produto_id, quantidade) VALUES (%s, %s, %s)"
-                    result = self.execute_query(query, (pedido_id, produto_id, quantidade))
-                    
-                    if result['success']:
-                        logging.info(f"➕ Item inserido: Pedido {pedido_id}, Produto {produto_id}, Qtd {quantidade}")
-        
-        return True
-    
-    def update_pedido(self) -> bool:
-        """Atualiza a data de um pedido existente"""
-        pedido_id = self.get_random_existing_id('pedidos')
-        if not pedido_id:
-            return False
-        
-        nova_data = datetime.date.today() - datetime.timedelta(days=random.randint(0, 60))
-        
-        query = "UPDATE pedidos SET data_pedido = %s WHERE id = %s"
-        result = self.execute_query(query, (nova_data, pedido_id))
-        
-        if result['success'] and result['rowcount'] > 0:
-            logging.info(f"🔄 Pedido atualizado: ID {pedido_id} -> nova data: {nova_data}")
             return True
         return False
     
@@ -317,36 +450,95 @@ class DataManager:
             return True
         return False
     
-    def update_log(self) -> bool:
-        """Atualiza uma entrada de log existente"""
-        log_id = self.get_random_existing_id('logs')
-        if not log_id:
-            return False
+    def insert_generic(self) -> bool:
+        """Insere um novo registro na tabela generic"""
+        tipo = random.choice(self.sample_generic_types)
+        chave = random.choice(self.sample_generic_keys)
+        valor = random.choice(self.sample_generic_values)
         
-        nova_mensagem = f"{random.choice(self.sample_messages)} [ATUALIZADO]"
+        # Gerar metadata JSON-like
+        metadata = f'{{"timestamp": "{datetime.datetime.now().isoformat()}", "source": "auto-system", "version": "{random.randint(1, 10)}.{random.randint(0, 9)}"}}'
         
-        query = "UPDATE logs SET mensagem = %s WHERE id = %s"
-        result = self.execute_query(query, (nova_mensagem, log_id))
+        query = "INSERT INTO generic (tipo, chave, valor, metadata) VALUES (%s, %s, %s, %s)"
+        result = self.execute_query(query, (tipo, chave, valor, metadata))
         
-        if result['success'] and result['rowcount'] > 0:
-            logging.info(f"🔄 Log atualizado: ID {log_id}")
+        if result['success']:
+            logging.info(f"🔧 Generic inserido: {tipo} -> {chave} = {valor}")
             return True
         return False
     
+    def update_generic(self) -> bool:
+        """Atualiza um registro existente na tabela generic"""
+        generic_id = self.get_random_existing_id('generic')
+        if not generic_id:
+            return False
+        
+        novo_valor = random.choice(self.sample_generic_values)
+        novo_metadata = f'{{"timestamp": "{datetime.datetime.now().isoformat()}", "source": "auto-update", "operation": "scheduled_update"}}'
+        
+        if self.database_type == 'sqlserver':
+            query = "UPDATE generic SET valor = %s, metadata = %s, updated_at = GETDATE() WHERE id = %s"
+        elif self.database_type == 'mysql':
+            query = "UPDATE generic SET valor = %s, metadata = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s"
+        elif self.database_type == 'postgres':
+            query = "UPDATE generic SET valor = %s, metadata = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s"
+        
+        result = self.execute_query(query, (novo_valor, novo_metadata, generic_id))
+        
+        if result['success'] and result['rowcount'] > 0:
+            logging.info(f"🔧 Generic atualizado: ID {generic_id} -> {novo_valor}")
+            return True
+        return False
+    
+    def should_execute_generic_operations(self) -> bool:
+        """Verifica se deve executar operações na tabela generic (a cada 30 segundos)"""
+        current_time = time.time()
+        if current_time - self.last_generic_operation >= 30:
+            self.last_generic_operation = current_time
+            return True
+        return False
+    
+    def execute_generic_operations_cycle(self):
+        """Executa operações específicas na tabela generic"""
+        logging.info("⏰ Executando ciclo especial da tabela GENERIC (30s)")
+        
+        operations = [
+            ('INSERT Generic', self.insert_generic),
+            ('UPDATE Generic', self.update_generic)
+        ]
+        
+        # Executar 1-2 operações na tabela generic
+        num_operations = random.randint(1, 2)
+        selected_operations = random.sample(operations, num_operations)
+        
+        success_count = 0
+        for operation_name, operation_func in selected_operations:
+            try:
+                if operation_func():
+                    success_count += 1
+                time.sleep(0.5)  # Pequena pausa entre operações
+            except Exception as e:
+                logging.error(f"❌ Erro na operação {operation_name}: {e}")
+        
+        logging.info(f"🔧 Ciclo GENERIC concluído: {success_count}/{len(selected_operations)} operações executadas")
+    
     def execute_operations_cycle(self):
         """Executa um ciclo completo de operações"""
+        # Verificar se deve executar operações da tabela generic (a cada 30 segundos)
+        if self.should_execute_generic_operations():
+            self.execute_generic_operations_cycle()
+        
         operations = [
             ('INSERT Cliente', self.insert_cliente),
             ('UPDATE Cliente', self.update_cliente),
             ('INSERT Produto', self.insert_produto),
             ('UPDATE Produto', self.update_produto),
-            ('INSERT Pedido', self.insert_pedido),
-            ('UPDATE Pedido', self.update_pedido),
             ('INSERT Log', self.insert_log),
-            ('UPDATE Log', self.update_log)
+            ('INSERT Generic', self.insert_generic),
+            ('UPDATE Generic', self.update_generic)
         ]
         
-        # Executar 2-4 operações aleatórias por ciclo
+        # Executar 2-4 operações aleatórias por ciclo (incluindo generic ocasionalmente)
         num_operations = random.randint(2, 4)
         selected_operations = random.sample(operations, num_operations)
         
@@ -361,90 +553,72 @@ class DataManager:
         
         logging.info(f"✅ Ciclo concluído: {success_count}/{len(selected_operations)} operações executadas com sucesso")
     
-    def run_continuous(self):
-        """Executa o gerenciador de forma contínua"""
-        logging.info(f"🚀 Iniciando gerenciamento automático de dados ({self.database_type.upper()})")
+    def run_demo(self, duration_seconds: int = 20):
+        """Executa uma demonstração por tempo limitado"""
+        logging.info(f"🚀 Iniciando demonstração do gerenciamento automático ({self.database_type.upper()})")
+        logging.info(f"⏰ Duração: {duration_seconds} segundos")
         
-        while self.running:
+        # Verificar/criar tabelas para todos os bancos
+        if not self.check_tables_exist():
+            logging.error("❌ Falha ao verificar/criar tabelas")
+            return
+        
+        start_time = time.time()
+        cycles = 0
+        
+        while time.time() - start_time < duration_seconds:
             try:
+                cycles += 1
+                logging.info(f"🔄 Executando ciclo {cycles}")
                 self.execute_operations_cycle()
                 
-                # Aguardar 30 segundos
-                for i in range(30):
-                    if not self.running:
-                        break
-                    time.sleep(1)
+                # Aguardar próximo ciclo (máximo 8 segundos)
+                wait_time = min(8, duration_seconds - (time.time() - start_time))
+                if wait_time > 0:
+                    time.sleep(wait_time)
                     
             except Exception as e:
-                logging.error(f"❌ Erro no ciclo principal: {e}")
-                time.sleep(5)  # Pausa menor em caso de erro
-    
-    def start(self):
-        """Inicia o gerenciador em thread separada"""
-        if not self.connect():
-            return False
+                logging.error(f"❌ Erro no ciclo {cycles}: {e}")
+                time.sleep(2)
         
-        self.running = True
-        self.thread = threading.Thread(target=self.run_continuous)
-        self.thread.daemon = True
-        self.thread.start()
-        
-        logging.info("✅ Gerenciador automático iniciado!")
-        return True
-    
-    def stop(self):
-        """Para o gerenciador"""
-        self.running = False
-        if self.thread:
-            self.thread.join(timeout=5)
-        self.disconnect()
-        logging.info("⏹️  Gerenciador automático parado!")
-
-def signal_handler(signum, frame):
-    """Handler para sinais do sistema (Ctrl+C)"""
-    print("\n⏹️  Parando o gerenciador automático...")
-    global manager
-    if 'manager' in globals():
-        manager.stop()
-    sys.exit(0)
+        logging.info(f"🎉 Demonstração concluída! Executados {cycles} ciclos em {duration_seconds} segundos")
 
 def main():
     """Função principal"""
-    global manager
-    
-    # Configurar handler para Ctrl+C
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
     
     # Verificar argumentos
-    database_type = sys.argv[1] if len(sys.argv) > 1 else 'mysql'
+    database_type = sys.argv[1] if len(sys.argv) > 1 else 'sqlserver'
+    duration = int(sys.argv[2]) if len(sys.argv) > 2 else 20
     
     if database_type not in ['mysql', 'postgres', 'sqlserver']:
         print("❌ Tipo de banco inválido. Use: mysql, postgres ou sqlserver")
         sys.exit(1)
     
     print(f"""
-🗄️  Sistema de Gerenciamento Automático de Dados
-===============================================
+🗄️  Sistema de Gerenciamento Automático - MULTI BANCO
+=========================================================
 🎯 Banco: {database_type.upper()}
-⏰ Intervalo: 30 segundos
+⏰ Duração: {duration} segundos
 📊 Operações: INSERT e UPDATE automáticos
-🔄 Pressione Ctrl+C para parar
-===============================================
+🔧 Drivers: pymysql, psycopg2, pymssql
+📋 Tabelas: clientes, produtos, logs, generic
+⏰ Generic: Operações automáticas a cada 30 segundos
+💾 Suporte: MySQL, PostgreSQL, SQL Server
+=========================================================
     """)
     
     # Criar e iniciar o gerenciador
     manager = DataManager(database_type)
     
-    if manager.start():
+    if manager.connect():
         try:
-            # Manter o programa rodando
-            while True:
-                time.sleep(1)
+            manager.run_demo(duration)
         except KeyboardInterrupt:
-            pass
+            print("\n⏹️  Demo interrompida pelo usuário")
+        finally:
+            manager.disconnect()
     else:
-        print("❌ Falha ao iniciar o gerenciador!")
+        print("❌ Falha ao conectar ao banco!")
         sys.exit(1)
 
 if __name__ == "__main__":
